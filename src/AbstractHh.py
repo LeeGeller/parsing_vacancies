@@ -1,6 +1,20 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class AbstractHh(ABC):
-    pass
 
+    @abstractmethod
+    def get_vacancy_from_api(self):
+        pass
+
+    @abstractmethod
+    def save_info(self):
+        pass
+
+    @abstractmethod
+    def get_vacancy_info(self):
+        pass
+
+    @abstractmethod
+    def remove_vacancy(self):
+        pass
