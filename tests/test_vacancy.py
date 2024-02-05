@@ -9,9 +9,8 @@ def test_issubclass():
     assert issubclass(Vacancy, AbstractHh)
 
 
-def test_get_vacancy_from_api():
+def test_save_info_and_get_vacancy_from_api():
     vacancy = Vacancy('python')
-    assert isinstance(vacancy.get_vacancy_from_api(), dict)
-    assert len(vacancy.get_vacancy_from_api()) != 0
+    vacancy.save_info()
 
-#     assert vacancy
+    assert len(vacancy.all) != 0
