@@ -6,7 +6,7 @@ from config import DATA
 from src.AbstractHh import AbstractHh
 
 
-class Vacancy(AbstractHh):
+class GetVacancies(AbstractHh):
     all = []
 
     def __init__(self, name_vacancy: str):
