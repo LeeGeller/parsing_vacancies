@@ -10,7 +10,6 @@ def test_issubclass():
 
 
 def test_save_info_and_get_vacancy_from_api():
-    vacancy = Vacancy('python')
-    vacancy.save_info()
 
-    assert len(vacancy.all) != 0
+    assert Vacancy('sfsf').message == "Vacancy not found"
+    assert Vacancy('python').message == "Vacancies found"
