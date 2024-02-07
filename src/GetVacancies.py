@@ -18,11 +18,14 @@ class GetVacancies(AbstractHh):
         """Get valid info about vacancies for user"""
         self.all.clear()
 
-        keys_response = {'text': f'NAME:{self.name_vacancy}', 'area': 113, 'per_page': 100, }
-        info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
-        self.all.extend(json.loads(info.text)['items'])
-
-        return self.all
+        if isinstance(self.name_vacancy, str):
+            keys_response = {'text': f'NAME:{self.name_vacancy}', 'area': 113, 'per_page': 100, }
+            info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
+            self.all.extend(json.loads(info.text)['items'])
+            return self.all
+        else:
+            self.message = "Vacancy not found"
+            return self.message
 
     def save_info(self) -> str or list:
         """Created json file with info about vacancies"""
