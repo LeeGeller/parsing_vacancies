@@ -40,17 +40,19 @@ class CompareVacancies(Vacancy):
                         f"It must be integer. Not float or string.\n")
             return self.salary_all[self.salary]
 
-    # def get_top_vacancies(self) -> list:
-    #     """
-    #     Get top vacancies.
-    #     :return: list with vacancies.
-    #     """
-    #     self.salary_top = defaultdict(list)
-    #     vacancies = self.get_vacancies()
-    #     for vacancy in vacancies:
-    #         if vacancy["salary"]["to"] is not None:
-    #             self.salary_top[vacancy["salary"]["to"]].append(vacancy)
+    def get_top_vacancies(self) -> list:
+        """
+        Get top vacancies.
+        :return: list with vacancies.
+        """
+        self.salary_top = defaultdict(list)
+        vacancies = self.get_vacancies()
+        for vacancy in vacancies:
+            if vacancy["salary"]["to"] is not None:
+                self.salary_top[vacancy["salary"]["to"]].append(vacancy)
+        self.salary_top = dict(sorted(self.salary_top.items(), reverse=True))
+        return self.salary_top
 
 
 v = CompareVacancies('python', 80000)
-print(v.get_vacancies())
+print(v.get_top_vacancies())
