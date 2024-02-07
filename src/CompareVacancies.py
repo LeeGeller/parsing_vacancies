@@ -32,12 +32,14 @@ class CompareVacancies(GetVacancies):
             return self.salary_all
         elif self.salary == "from_None":
             return self.salary_all.get("from_None")
+        elif isinstance(self.salary, int):
+            self.salary_all = self.salary_all[self.salary]
+            return self.salary_all
         else:
             if len(self.salary_all[self.salary]) == 0:
                 return (f"I not found vacancies with this salary.\n"
                         f"Check your salary: '{self.salary}' for search.\n"
                         f"It must be integer. Not float or string.\n")
-            return self.salary_all[self.salary]
 
     def get_top_vacancies(self) -> list:
         """
