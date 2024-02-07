@@ -12,4 +12,5 @@ def test_issubclass():
 def test_save_info_and_get_vacancy_from_api():
 
     assert GetVacancies('sfsf').message == "Vacancy not found"
+    assert GetVacancies(1).message == "Vacancy not found"
     assert GetVacancies('python').message == "Vacancies found"
