@@ -1,12 +1,11 @@
-from src.Vacancy import Vacancy
+from src.GetVacancies import GetVacancies
 from collections import defaultdict
 
 
-class CompareVacancies(Vacancy):
-    def __init__(self, name_vacancy: str, salary='', count_vacancies=5):
+class CompareVacancies(GetVacancies):
+    def __init__(self, name_vacancy: str, salary=''):
         super().__init__(name_vacancy)
         self.salary = salary
-        self.count_vacancies = count_vacancies
         self.salary_all: dict = {}
 
     def generate_salary_dict(self) -> dict:
@@ -52,7 +51,3 @@ class CompareVacancies(Vacancy):
                 self.salary_top[vacancy["salary"]["to"]].append(vacancy)
         self.salary_top = dict(sorted(self.salary_top.items(), reverse=True))
         return self.salary_top
-
-
-v = CompareVacancies('python', 80000)
-print(v.get_top_vacancies())
