@@ -1,4 +1,5 @@
 import json
+import pathlib
 
 import requests
 
@@ -26,16 +27,15 @@ class GetVacancies(AbstractHh):
             self.message = "Vacancy not found"
             return self.message
 
-    def save_info(self, list_info: list) -> str or list:
+    def save_info(self, list_info: list, data: str) -> str or list:
         """Created json file with info about vacancies"""
 
         if len(list_info) == 0:
             self.message = "Vacancy not found"
             return self.message
         else:
-            try:
-                with open(DATA, 'w', encoding='utf-8') as file:
+            if pathlib.Path.exists(data) is not None:
+                with open(data, 'w', encoding='utf-8') as file:
                     file.write(json.dumps(list_info, ensure_ascii=False))
                 return self.all
-            except Exception:
-                raise "I can't save file."
+            raise AttributeError
