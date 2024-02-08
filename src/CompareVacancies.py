@@ -28,18 +28,19 @@ class CompareVacancies(GetVacancies):
            If vacancies not found return that vacancies not found.
         """
         self.generate_salary_dict()
-        if self.salary == '':
-            return self.salary_all
-        elif self.salary == "from_None":
-            return self.salary_all.get("from_None")
-        elif isinstance(self.salary, int):
-            self.salary_all = self.salary_all[self.salary]
-            return self.salary_all
+        if len(self.salary_all[self.salary]) == 0:
+            self.message = "Vacancy not found"
+            return self.message
         else:
-            if len(self.salary_all[self.salary]) == 0:
-                return (f"I not found vacancies with this salary.\n"
-                        f"Check your salary: '{self.salary}' for search.\n"
-                        f"It must be integer. Not float or string.\n")
+            if self.salary == '':
+                return self.salary_all
+            elif self.salary == "from_None":
+                return self.salary_all.get("from_None")
+            elif isinstance(self.salary, int):
+                    self.salary_all = self.salary_all[self.salary]
+                    return self.salary_all
+
+
 
     def get_top_vacancies(self) -> list:
         """
