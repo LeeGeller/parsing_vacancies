@@ -9,8 +9,15 @@ def test_issubclass():
     assert issubclass(GetVacancies, AbstractHh)
 
 
-def test_save_info_and_get_vacancy_from_api():
+def test_get_vacancy_from_api():
+    vacancy1 = GetVacancies('tttttt')
+    vacancy2 = GetVacancies(1)
+    vacancy3 = GetVacancies('python')
 
-    assert GetVacancies('sfsf').message == "Vacancy not found"
-    assert GetVacancies(1).message == "Vacancy not found"
-    assert GetVacancies('python').message == "Vacancies found"
+    vacancy1.get_vacancy_from_api(vacancy1.name_vacancy)
+    vacancy2.get_vacancy_from_api(vacancy2.name_vacancy)
+    vacancy3.get_vacancy_from_api(vacancy3.name_vacancy)
+
+    assert vacancy1.message == "Vacancies found"
+    assert vacancy2.message == "Vacancy not found"
+    assert vacancy3.message == "Vacancies found"
