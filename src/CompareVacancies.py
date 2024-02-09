@@ -51,5 +51,8 @@ class CompareVacancies(GetVacancies):
                 salary_top[vacancy["salary"]["to"]].append(vacancy)
         salary_top = dict(sorted(salary_top.items(), reverse=True))
         self.all = salary_top
-        return 'Not found' if len(self.all) < 1 else self.all
+        if len(self.all) < 1:
+            self.message = "Vacancy not found"
+            return self.message
+        return self.all
 
