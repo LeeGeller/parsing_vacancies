@@ -13,7 +13,10 @@ class GetVacancies(AbstractHh):
     def __init__(self, name_vacancy: str):
         self.name_vacancy: str = name_vacancy
         self.message = "Vacancies found"
-        self.save_info()
+        self.all_vacancy = self.save_info()
+
+    def __repr__(self):
+        return f"{self.all_vacancy}"
 
     def get_vacancy_from_api(self) -> list:
         """Get valid info about vacancies for user"""
@@ -22,8 +25,7 @@ class GetVacancies(AbstractHh):
         if isinstance(self.name_vacancy, str):
             keys_response = {'text': f'NAME:{self.name_vacancy}', 'area': 113, 'per_page': 100, }
             info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
-            self.all.extend(json.loads(info.text)['items'])
-            return self.all
+            return json.loads(info.text)['items']
         else:
             self.message = "Vacancy not found"
             return self.message
