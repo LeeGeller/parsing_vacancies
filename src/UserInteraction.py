@@ -35,15 +35,16 @@ class UserInteraction(CompareVacancies):
                                                    {"URL": value['alternate_url']}])
                 count += 1
 
-    def last_info(self, top_salary: dict, number_of_vacancies: int):
+    @staticmethod
+    def last_info(top_salary: dict, number_of_vacancies: int):
         """
             Get info about top vacancies
+            :param number_of_vacancies: number of vacancy from top
             :param top_salary: dict with top vacancies
         """
         for params_vacancy in top_salary[number_of_vacancies]:
             for key, val in params_vacancy.items():
                 print("{0}: {1}".format(key, val))
-
 
 
 user = UserInteraction('python')
