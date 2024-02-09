@@ -23,17 +23,21 @@ class UserInteraction(CompareVacancies):
         :return: list with vacancies.
         """
         print(f"Top salary:")
-        count = 1
 
+        count = 1
         for top, vacancies in top_salary.items():
-            print(f"{count}. Top sallary {top} - count {len(vacancies)}")
+
+            print(f"{count}. Top sallary {top} - count {len(vacancies)}", end='\n')
+
             for value in vacancies:
                 self.vacancies_list[count].extend([{"Name of vacancy": value['name']},
                                                    {"Salary from": value['salary']['from']},
                                                    {"Salary to": value['salary']['to']},
                                                    {"City": value['area']['name']},
-                                                   {"URL": value['alternate_url']}])
-                count += 1
+                                                   {"URL": f"{value['alternate_url']}\n"}])
+            count += 1
+
+
 
     @staticmethod
     def last_info(top_salary: dict, number_of_vacancies: int):
@@ -42,6 +46,9 @@ class UserInteraction(CompareVacancies):
             :param number_of_vacancies: number of vacancy from top
             :param top_salary: dict with top vacancies
         """
-        for params_vacancy in top_salary[number_of_vacancies]:
+        print()
+        info = []
+        for params_vacancy in top_salary[int(number_of_vacancies)]:
             for key, val in params_vacancy.items():
-                print("{0}: {1}".format(key, val))
+                info.append("{0}: {1}".format(key, val))
+        return '\n'.join(info)
