@@ -1,5 +1,4 @@
 from collections import defaultdict
-from copy import deepcopy
 
 from src.CompareVacancies import CompareVacancies
 
@@ -8,8 +7,7 @@ class UserInteraction(CompareVacancies):
     def __init__(self, name_vacancy):
         super().__init__(name_vacancy)
         self.save_info()
-        self.vacancies = []
-
+        self.vacancies = defaultdict(dict)
 
     def __str__(self):
         self.message = "Vacancy not found" if len(self.vacancies) == 0 else self.message
@@ -17,43 +15,47 @@ class UserInteraction(CompareVacancies):
                 f"Count vacancies: {len(self.vacancies)}\n"
                 f"Status: {self.message}")
 
-    def choose_city(self, city: str) -> dict:
+    def choose_city(self, city: str, vacancies_dict: dict) -> dict:
         """
         Func for dort list with vacancies for city.
+        :param vacancies_dict: dict with key of top
+        salary and vacancies.
         :param city: user's city.
         :return: dict with vacancies for user.
         """
 
-        vacancies = []
+        right_top_vacancies = defaultdict(list)
 
-        if city == '1':
-            return self.generate_salary_dict(self.all)
-        else:
-            for value in self.all:
-                if value['area']['name'] == city:
-                    vacancies.extend(value)
-        return self.generate_salary_dict(vacancies)
+        for salary, vacancies in vacancies_dict.items():
+            for vacancy in vacancies:
+                if vacancy['area']['name'] == city:
+                    right_top_vacancies[salary].append(vacancy)
+        return right_top_vacancies
 
-    def make_info(self, count_vacancies: int) -> list:
+    def make_info(self, count_vacancies: str, right_top_vacancies: dict) -> list:
         """
         Created list with vacancies for user.
         :param count_vacancies: how many vacancies
         user wants to see
         :return: list with vacancies.
         """
-        count_vacancies = count_vacancies
-        self.get_top_vacancies()
-        while count_vacancies > 0:
-            for top_salary, vacancies in self.salary_all.items():
-                for vacancy in vacancies:
-                    title = vacancy['name']
-                    area = vacancy['area']['name']
-                    salary_from = vacancy['salary']['from']
-                    salary_to = vacancy['salary']['to']
-                    url = vacancy['alternate_url']
-                    description = vacancy['snippet']['requirement']
-                    experience = vacancy['experience']['name']
-                    self.vacancies.append(
-                        {title: [area, salary_from, salary_to, description, experience, url]})
-                    count_vacancies -= 1
+        if len(right_top_vacancies) < int(count_vacancies):
+            count_vacancies = len(right_top_vacancies)
+
+        for vacancy in right_top_vacancies.values():
+            for index, value in enumerate(vacancy):
+                self.vacancies[index + 1] = {"Name": value['name'],
+                                             "Salary to": value['salary']['to'],
+                                             "URL": value['alternate_url'],
+                                             "Requirement": value['snippet']['requirement']}
+                if len(self.vacancies) == int(count_vacancies):
+                    break
+
         return self.vacancies
+
+    def change_status(self):
+        """
+        Check status about requirement
+        :return: True or False
+        """
+        return True if self.message == "Vacancies found" else False
