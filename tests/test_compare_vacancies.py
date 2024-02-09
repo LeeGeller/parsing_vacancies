@@ -2,50 +2,54 @@ from src.CompareVacancies import CompareVacancies
 from copy import deepcopy
 
 
-def test_generate_salary_dict_valid():
-    v = CompareVacancies('python')
+def test_generate_salary_dict_valid(fixture_class_valid):
+    vacancy = fixture_class_valid
 
-    assert isinstance(v.generate_salary_dict(), dict)
-    assert len(v.generate_salary_dict()) > 0
-
-
-def test_generate_salary_dict_some_choice():
-    vacancy_1 = CompareVacancies('dsf')
-    assert len(vacancy_1.generate_salary_dict()) == 0
-    assert len(CompareVacancies(1).generate_salary_dict()) == 0
+    assert isinstance(fixture_class_valid.generate_salary_dict(vacancy.all), dict)
+    assert len(fixture_class_valid.generate_salary_dict(vacancy.all)) > 0
 
 
-def test_get_vacancies_check_salary():
-    vacancy = CompareVacancies('python')
-    vacancy.get_vacancies()
+def test_generate_salary_dict_some_choice(fixture_class_some_str, fixture_class_number):
+    vacancy = fixture_class_some_str
+    vacancy2 = fixture_class_number
 
-    assert 'from_None' in vacancy.salary_all.keys()
-    assert 80000 in vacancy.salary_all.keys()
-
-    vacancy_2 = CompareVacancies('python', 80000)
-    check_list = []
-    for value in vacancy_2.get_vacancies():
-        for key, val in value.items():
-            if value['salary']['from'] == None:
-                check_list.append(val)
-
-    assert len(check_list) == 0
+    assert len(vacancy.all) == 0
+    assert len(vacancy2.all) == 0
+    fixture_class_some_str.generate_salary_dict(
+        [{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}])
+    assert fixture_class_some_str.salary_all == {'from_None': [{"salary": None}, {"salary": {"from": None}}],
+                                                 100: [{"salary": {"from": 100}}]}
 
 
-def test_get_vacancies_len_is_zero():
-    vacancy_1 = CompareVacancies('tttttttt', 300000)
-    vacancy_1.get_vacancies()
-    assert len(vacancy_1.salary_all) < 2
-    assert vacancy_1.message == "Vacancy not found"
+def test_get_vacancies_check_salary(fixture_class_valid):
+    # Search vacancies wit key "from_None"
+    vacancy1 = fixture_class_valid
+    salary_none = "from_None"
+    salary = 100
+    vacancy1.generate_salary_dict([{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}])
+    vacancy1.get_vacancies(vacancy1.salary_all, salary)
+
+    assert vacancy1.salary_all == [{"salary": {"from": 100}}]
+
+    vacancy1.generate_salary_dict([{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}])
+    vacancy1.get_vacancies(vacancy1.salary_all, salary_none)
+    assert vacancy1.salary_all == [{"salary": None}, {"salary": {"from": None}}]
 
 
-def test_get_top_vacancies():
-    vacancy_1 = CompareVacancies('python', 50000)
+def test_get_vacancies_len_is_zero(fixture_class_number):
+    vacancy = fixture_class_number
+    assert len(vacancy.salary_all) < 2
+    assert vacancy.message == "Vacancy not found"
 
-    assert len(vacancy_1.get_top_vacancies()) > 0
-    top_list = []
-    for keys in vacancy_1.salary_top.keys():
-        top_list.append(keys)
-    new_list = deepcopy(top_list)
 
-    assert sorted(top_list, reverse=True) == new_list
+def test_get_top_vacancies_valid(fixture_class_valid):
+    vacancy = fixture_class_valid
+    vacancy.salary_all = [{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}]
+
+    assert vacancy.get_top_vacancies(1) == 'Not found'
+
+    vacancy = fixture_class_valid
+    vacancy.salary_all = [{"salary": None}, {"salary": {"from": None, "to": 1000}},
+                          {"salary": {"from": 100, "to": 3000}}]
+
+    assert vacancy.get_top_vacancies(100) == {3000:[{"salary": {"from": 100, "to": 3000}}], 1000:[{"salary": {"from": None, "to": 1000}}]}
