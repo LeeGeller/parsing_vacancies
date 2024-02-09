@@ -26,7 +26,7 @@ class CompareVacancies(GetVacancies):
            Get vacancies with necessary salary.
            If vacancies not found return that vacancies not found.
         """
-        if len(salary_dict) == 0:
+        if len(salary_dict) < 1:
             self.message = "Vacancy not found"
             return self.message
         else:
@@ -43,10 +43,11 @@ class CompareVacancies(GetVacancies):
         :return: list with vacancies.
         """
         salary_top = defaultdict(list)
-        for vacancy in salary_all:
-            if vacancy.get("salary") is None or vacancy["salary"]["to"] is None:
+        for vacancy in self.salary_all:
+            vacancy_salary = vacancy.get("salary")
+            if vacancy_salary is None or vacancy_salary.get("to") is None:
                 continue
-            elif vacancy["salary"]["to"] is not None:
+            elif vacancy_salary:
                 salary_top[vacancy["salary"]["to"]].append(vacancy)
         salary_top = dict(sorted(salary_top.items(), reverse=True))
         self.all = salary_top
