@@ -37,8 +37,6 @@ class UserInteraction(CompareVacancies):
                                                    {"URL": f"{value['alternate_url']}\n"}])
             count += 1
 
-
-
     @staticmethod
     def last_info(top_salary: dict, number_of_vacancies: int):
         """
