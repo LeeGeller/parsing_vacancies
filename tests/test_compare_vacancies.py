@@ -52,7 +52,9 @@ def test_get_top_vacancies_valid(fixture_class_valid):
     vacancy.salary_all = [{"salary": None}, {"salary": {"from": None, "to": 1000}},
                           {"salary": {"from": 100, "to": 3000}}]
 
-    assert vacancy.get_top_vacancies(100) == {3000:[{"salary": {"from": 100, "to": 3000}}], 1000:[{"salary": {"from": None, "to": 1000}}]}
+    assert vacancy.get_top_vacancies(100) == {3000: [{"salary": {"from": 100, "to": 3000}}],
+                                              1000: [{"salary": {"from": None, "to": 1000}}]}
+
 
 def test_get_vacancies_len_dict(fixture_class_valid):
     vacancy = fixture_class_valid
