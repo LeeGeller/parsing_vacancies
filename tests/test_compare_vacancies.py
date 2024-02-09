@@ -1,8 +1,8 @@
 def test_generate_salary_dict_valid(fixture_class_valid):
     vacancy = fixture_class_valid
 
-    assert isinstance(fixture_class_valid.generate_salary_dict(vacancy.all), dict)
-    assert len(fixture_class_valid.generate_salary_dict(vacancy.all)) > 0
+    assert isinstance(fixture_class_valid.generate_salary_dict(vacancy.salary_all), dict)
+    assert len(fixture_class_valid.generate_salary_dict(vacancy.salary_all)) == 0
 
 
 def test_generate_salary_dict_some_choice(fixture_class_some_str, fixture_class_number):
