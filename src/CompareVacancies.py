@@ -44,16 +44,17 @@ class CompareVacancies(GetVacancies):
         Get top vacancies.
         :return: list with vacancies.
         """
-        salary_top = defaultdict(list)
-        for vacancy in self.salary_all:
-            vacancy_salary = vacancy.get("salary")
-            if vacancy_salary is None or vacancy_salary.get("to") is None:
-                continue
-            elif vacancy_salary:
-                salary_top[vacancy["salary"]["to"]].append(vacancy)
+        salary_top = defaultdict(dict)
+        for salary, vacancy in self.salary_all.items():
+            if salary != 'from_None':
+                for value in vacancy:
+                    if value["salary"] is False:
+                        continue
+                    elif value["salary"]["to"] is not None:
+                        salary_top[value["salary"]["to"]] = vacancy
         salary_top = dict(sorted(salary_top.items(), reverse=True))
-        self.all = salary_top
-        if len(self.all) < 1:
+        if len(salary_top) < 1:
             self.message = "Vacancy not found"
             return self.message
-        return self.all
+        self.salary_all = salary_top
+        return self.salary_all
