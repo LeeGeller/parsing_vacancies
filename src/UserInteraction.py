@@ -34,7 +34,13 @@ class UserInteraction(CompareVacancies):
                     vacancies.extend(value)
         return self.generate_salary_dict(vacancies)
 
-    def make_info(self, count_vacancies: int):
+    def make_info(self, count_vacancies: int) -> list:
+        """
+        Created list with vacancies for user.
+        :param count_vacancies: how many vacancies
+        user wants to see
+        :return: list with vacancies.
+        """
         count_vacancies = count_vacancies
         self.get_top_vacancies()
         while count_vacancies > 0:
