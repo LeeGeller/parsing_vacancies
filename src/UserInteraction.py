@@ -10,6 +10,7 @@ class UserInteraction(CompareVacancies):
         self.save_info()
         self.vacancies = []
 
+
     def __str__(self):
         self.message = "Vacancy not found" if len(self.vacancies) == 0 else self.message
         return (f"Name of vacancy for search: {self.name_vacancy}\n"
@@ -23,11 +24,30 @@ class UserInteraction(CompareVacancies):
         :return: dict with vacancies for user.
         """
 
-        for index, value in enumerate(self.all):
-            if value['area']['name'] == city:
-                self.vacancies.append(value)
-        self.generate_salary_dict(self.vacancies)
-        self.vacancies = self.get_top_vacancies()
+        vacancies = []
+
+        if city == '1':
+            return self.generate_salary_dict(self.all)
+        else:
+            for value in self.all:
+                if value['area']['name'] == city:
+                    vacancies.extend(value)
+        return self.generate_salary_dict(vacancies)
+
+    def make_info(self, count_vacancies: int):
+        count_vacancies = count_vacancies
+        self.get_top_vacancies()
+        while count_vacancies > 0:
+            for top_salary, vacancies in self.salary_all.items():
+                for vacancy in vacancies:
+                    title = vacancy['name']
+                    area = vacancy['area']['name']
+                    salary_from = vacancy['salary']['from']
+                    salary_to = vacancy['salary']['to']
+                    url = vacancy['alternate_url']
+                    description = vacancy['snippet']['requirement']
+                    experience = vacancy['experience']['name']
+                    self.vacancies.append(
+                        {title: [area, salary_from, salary_to, description, experience, url]})
+                    count_vacancies -= 1
         return self.vacancies
-
-
