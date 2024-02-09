@@ -31,6 +31,7 @@ class UserInteraction(CompareVacancies):
                 self.vacancies_list[count].extend([{"Name of vacancy": value['name']},
                                                    {"Salary from": value['salary']['from']},
                                                    {"Salary to": value['salary']['to']},
+                                                   {"City": value['area']['name']},
                                                    {"URL": value['alternate_url']}])
                 count += 1
 
