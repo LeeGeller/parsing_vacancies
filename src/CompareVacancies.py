@@ -6,12 +6,14 @@ class CompareVacancies(GetVacancies):
     def __init__(self, name_vacancy: str):
         super().__init__(name_vacancy)
         self.salary_all: dict = {}
+        self.all = self.save_info()
 
     def generate_salary_dict(self, list_all: list) -> dict:
         """
            Created dict where key is salary. And generate dict
            with vacancies' list
         """
+
         self.salary_all = defaultdict(list)
 
         for vacancy in list_all:
@@ -37,7 +39,7 @@ class CompareVacancies(GetVacancies):
                 self.salary_all = salary_dict[salary]
                 return self.salary_all
 
-    def get_top_vacancies(self, salary_all) -> list:
+    def get_top_vacancies(self) -> list:
         """
         Get top vacancies.
         :return: list with vacancies.

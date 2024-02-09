@@ -1,7 +1,3 @@
-from src.CompareVacancies import CompareVacancies
-from copy import deepcopy
-
-
 def test_generate_salary_dict_valid(fixture_class_valid):
     vacancy = fixture_class_valid
 
@@ -10,11 +6,6 @@ def test_generate_salary_dict_valid(fixture_class_valid):
 
 
 def test_generate_salary_dict_some_choice(fixture_class_some_str, fixture_class_number):
-    vacancy = fixture_class_some_str
-    vacancy2 = fixture_class_number
-
-    assert len(vacancy.all) == 0
-    assert len(vacancy2.all) == 0
     fixture_class_some_str.generate_salary_dict(
         [{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}])
     assert fixture_class_some_str.salary_all == {'from_None': [{"salary": None}, {"salary": {"from": None}}],
@@ -46,14 +37,14 @@ def test_get_top_vacancies_valid(fixture_class_valid):
     vacancy = fixture_class_valid
     vacancy.salary_all = [{"salary": None}, {"salary": {"from": None}}, {"salary": {"from": 100}}]
 
-    assert vacancy.get_top_vacancies(1) == 'Not found'
+    assert vacancy.get_top_vacancies() == 'Vacancy not found'
 
     vacancy = fixture_class_valid
     vacancy.salary_all = [{"salary": None}, {"salary": {"from": None, "to": 1000}},
                           {"salary": {"from": 100, "to": 3000}}]
 
-    assert vacancy.get_top_vacancies(100) == {3000: [{"salary": {"from": 100, "to": 3000}}],
-                                              1000: [{"salary": {"from": None, "to": 1000}}]}
+    assert vacancy.get_top_vacancies() == {3000: [{"salary": {"from": 100, "to": 3000}}],
+                                           1000: [{"salary": {"from": None, "to": 1000}}]}
 
 
 def test_get_vacancies_len_dict(fixture_class_valid):
