@@ -32,11 +32,11 @@ class CompareVacancies(GetVacancies):
             self.message = "Vacancy not found"
             return self.message
         else:
-            if salary == "from_None":
+            if salary == "":
                 self.salary_all = salary_dict["from_None"]
                 return self.salary_all
             elif isinstance(salary, int):
-                self.salary_all = salary_dict[salary]
+                self.salary_all = salary_dict[int(salary)]
                 return self.salary_all
 
     def get_top_vacancies(self) -> list:
@@ -57,4 +57,3 @@ class CompareVacancies(GetVacancies):
             self.message = "Vacancy not found"
             return self.message
         return self.all
-
