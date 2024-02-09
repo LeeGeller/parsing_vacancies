@@ -5,56 +5,42 @@ from collections import defaultdict
 class CompareVacancies(GetVacancies):
     def __init__(self, name_vacancy: str):
         super().__init__(name_vacancy)
-        self.salary_all: dict = {}
+        self.salary_all: dict = defaultdict(list)
         self.all = self.save_info()
 
-    def generate_salary_dict(self, list_all: list) -> dict:
+    def generate_salary_dict(self, list_all: list, salary: int) -> dict:
         """
-           Created dict where key is salary. And generate dict
+           Generate dict with necessary salary
            with vacancies' list
         """
-
-        self.salary_all = defaultdict(list)
+        salary_dict = defaultdict(list)
 
         for vacancy in list_all:
-            if vacancy["salary"] is None or vacancy["salary"]["from"] is None:
-                self.salary_all['from_None'].append(vacancy)
-            else:
-                self.salary_all[vacancy["salary"]['from']].append(vacancy)
+            if vacancy["salary"] is not None and vacancy["salary"]["from"] is not None:
+                salary_dict[vacancy["salary"]['from']].append(vacancy)
+
+        for key, vacancy in salary_dict.items():
+            if key == int(salary):
+                self.salary_all[salary].extend(vacancy)
+
         return self.salary_all
 
-    def get_vacancies(self, salary_dict: dict, salary: int or str) -> list:
-        """
-           Get vacancies with necessary salary.
-           If vacancies not found return that vacancies not found.
-        """
-        if len(salary_dict) < 1:
-            self.message = "Vacancy not found"
-            return self.message
-        else:
-            if salary == "":
-                self.salary_all = salary_dict["from_None"]
-                return self.salary_all
-            elif isinstance(salary, int):
-                self.salary_all = salary_dict[int(salary)]
-                return self.salary_all
-
-    def get_top_vacancies(self) -> list:
+    def get_top_vacancies(self, necessary_salary) -> list:
         """
         Get top vacancies.
         :return: list with vacancies.
         """
-        salary_top = defaultdict(dict)
-        for salary, vacancy in self.salary_all.items():
-            if salary != 'from_None':
-                for value in vacancy:
-                    if value["salary"] is False:
-                        continue
-                    elif value["salary"]["to"] is not None:
-                        salary_top[value["salary"]["to"]] = vacancy
+        salary_top = defaultdict(list)
+
+        for top, vacancy in necessary_salary.items():
+            for value in vacancy:
+                if value["salary"] is not None and value["salary"]["to"] is not None:
+                    salary_top[value["salary"]["to"]].extend(vacancy)
+
         salary_top = dict(sorted(salary_top.items(), reverse=True))
+
         if len(salary_top) < 1:
             self.message = "Vacancy not found"
             return self.message
-        self.salary_all = salary_top
-        return self.salary_all
+
+        return salary_top
