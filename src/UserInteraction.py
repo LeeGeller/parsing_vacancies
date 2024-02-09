@@ -45,13 +45,3 @@ class UserInteraction(CompareVacancies):
         for params_vacancy in top_salary[number_of_vacancies]:
             for key, val in params_vacancy.items():
                 print("{0}: {1}".format(key, val))
-
-
-user = UserInteraction('python')
-
-user.sorted_salary(user.all_vacancy, 50000, 'Москва')
-user.get_top_vacancies(user.sort_salary)
-
-user.make_info(user.top_salary)
-
-user.last_info(user.vacancies_list, 8)
