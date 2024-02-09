@@ -35,6 +35,7 @@ class UserInteraction(CompareVacancies):
     def make_info(self, count_vacancies: str, right_top_vacancies: dict) -> list:
         """
         Created list with vacancies for user.
+        :param right_top_vacancies: dict with vacancies
         :param count_vacancies: how many vacancies
         user wants to see
         :return: list with vacancies.
