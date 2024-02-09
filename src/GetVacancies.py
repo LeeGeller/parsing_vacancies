@@ -13,13 +13,14 @@ class GetVacancies(AbstractHh):
     def __init__(self, name_vacancy: str):
         self.name_vacancy: str = name_vacancy
         self.message = "Vacancies found"
+        self.save_info()
 
-    def get_vacancy_from_api(self, vacancy_name: str) -> list:
+    def get_vacancy_from_api(self) -> list:
         """Get valid info about vacancies for user"""
         self.all.clear()
 
-        if isinstance(vacancy_name, str):
-            keys_response = {'text': f'NAME:{vacancy_name}', 'area': 113, 'per_page': 100, }
+        if isinstance(self.name_vacancy, str):
+            keys_response = {'text': f'NAME:{self.name_vacancy}', 'area': 113, 'per_page': 100, }
             info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
             self.all.extend(json.loads(info.text)['items'])
             return self.all
@@ -27,15 +28,14 @@ class GetVacancies(AbstractHh):
             self.message = "Vacancy not found"
             return self.message
 
-    def save_info(self, list_info: list, data: str) -> str or list:
+    def save_info(self) -> str or list:
         """Created json file with info about vacancies"""
+        self.get_vacancy_from_api()
 
-        if len(list_info) == 0:
+        if len(self.all) == 0:
             self.message = "Vacancy not found"
             return self.message
         else:
-            if pathlib.Path.exists(data) is not None:
-                with open(data, 'w', encoding='utf-8') as file:
-                    file.write(json.dumps(list_info, ensure_ascii=False))
-                return self.all
-            raise AttributeError
+            with open(DATA, 'w', encoding='utf-8') as file:
+                file.write(json.dumps(self.all, ensure_ascii=False))
+            return self.all
