@@ -39,8 +39,3 @@ class CompareVacancies(GetVacancies):
             return self.message
 
         return self.top_salary
-
-# vacancy = CompareVacancies('python')
-# vacancy.sorted_salary(vacancy.all_vacancy, 50000, "Москва")
-# sort_list = vacancy.sort_salary
-# print(vacancy.get_top_vacancies(sort_list))
