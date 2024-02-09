@@ -5,42 +5,42 @@ from collections import defaultdict
 class CompareVacancies(GetVacancies):
     def __init__(self, name_vacancy: str):
         super().__init__(name_vacancy)
-        self.salary_all: dict = defaultdict(list)
-        self.all = self.save_info()
+        self.sort_salary: dict = defaultdict(list)
+        self.top_salary: dict = defaultdict(list)
 
-    def generate_salary_dict(self, list_all: list, salary: int) -> dict:
+    def sorted_salary(self, list_all: list, salary: int, city: str) -> dict:
         """
            Generate dict with necessary salary
            with vacancies' list
         """
-        salary_dict = defaultdict(list)
 
         for vacancy in list_all:
             if vacancy["salary"] is not None and vacancy["salary"]["from"] is not None:
-                salary_dict[vacancy["salary"]['from']].append(vacancy)
+                if vacancy["area"]["name"] == city:
+                    if vacancy["salary"]['from'] >= salary and vacancy["salary"]['from'] is not None:
+                        self.sort_salary[vacancy["salary"]['from']].append(vacancy)
+        return self.sort_salary
 
-        for key, vacancy in salary_dict.items():
-            if key == int(salary):
-                self.salary_all[salary].extend(vacancy)
-
-        return self.salary_all
-
-    def get_top_vacancies(self, necessary_salary) -> list:
+    def get_top_vacancies(self, sort_salary) -> list:
         """
         Get top vacancies.
         :return: list with vacancies.
         """
-        salary_top = defaultdict(list)
 
-        for top, vacancy in necessary_salary.items():
+        for top, vacancy in sort_salary.items():
             for value in vacancy:
                 if value["salary"] is not None and value["salary"]["to"] is not None:
-                    salary_top[value["salary"]["to"]].extend(vacancy)
+                    self.top_salary[value["salary"]["to"]].extend(vacancy)
 
-        salary_top = dict(sorted(salary_top.items(), reverse=True))
+        self.top_salary = dict(sorted(self.top_salary.items(), reverse=True))
 
-        if len(salary_top) < 1:
+        if len(self.top_salary) < 1:
             self.message = "Vacancy not found"
             return self.message
 
-        return salary_top
+        return self.top_salary
+
+# vacancy = CompareVacancies('python')
+# vacancy.sorted_salary(vacancy.all_vacancy, 50000, "Москва")
+# sort_list = vacancy.sort_salary
+# print(vacancy.get_top_vacancies(sort_list))
