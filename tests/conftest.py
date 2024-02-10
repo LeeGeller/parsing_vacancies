@@ -1,5 +1,8 @@
+import json
+
 import pytest
 
+from config import DATA_TEST
 from src.CompareVacancies import CompareVacancies
 
 
@@ -16,3 +19,10 @@ def fixture_class_number():
 @pytest.fixture
 def fixture_class_some_str():
     return CompareVacancies('666999')
+
+
+@pytest.fixture
+def fixture_data():
+    with open(DATA_TEST, encoding='utf-8') as file:
+        return json.loads(file.read())
+
