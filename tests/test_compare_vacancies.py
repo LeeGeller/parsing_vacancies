@@ -1,9 +1,9 @@
 from src.CompareVacancies import CompareVacancies
-from src.ApiHH import GetVacancies
+from src.ApiHH import ApiHH
 
 
 def test_compare_vacancies_is_subclass_get_vacancies():
-    assert issubclass(CompareVacancies, GetVacancies)
+    assert issubclass(CompareVacancies, ApiHH)
 
 
 def test_sorted_salary(fixture_class_valid, fixture_data):
