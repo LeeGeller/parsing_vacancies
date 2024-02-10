@@ -3,7 +3,7 @@ from abc import ABC
 import pytest
 
 from config import DATA
-from src.GetVacancies import GetVacancies
+from src.ApiHH import GetVacancies
 from src.AbstractHh import AbstractHh
 
 
