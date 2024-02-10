@@ -2,7 +2,6 @@ import json
 
 from config import DATA
 from src.AbstractJsonSaver import AbstractJsonSaver
-from src.GetApiHh import GetApiHh
 
 
 class JsonSaver(AbstractJsonSaver):
