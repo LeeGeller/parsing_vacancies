@@ -10,7 +10,7 @@ class UserInteraction(CompareVacancies):
         self.vacancies_list = defaultdict(list)
 
     def __str__(self):
-        self.message = "Vacancy not found" if len(self.all_vacancy) == 0 else self.message
+        self.message = "Vacancy not found" if len(self.all_vacancy) < 2 else self.message
         return (f"Name of vacancy for search: {self.name_vacancy}\n"
                 f"Count vacancies: {len(self.all_vacancy)}\n"
                 f"Status: {self.message}")
@@ -50,3 +50,7 @@ class UserInteraction(CompareVacancies):
             for key, val in params_vacancy.items():
                 info.append("{0}: {1}".format(key, val))
         return '\n'.join(info)
+
+    @classmethod
+    def created_class_vacancy(cls, name_vacancy):
+        return cls(name_vacancy)
