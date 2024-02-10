@@ -6,8 +6,10 @@ from src.CompareVacancies import CompareVacancies
 class UserInteraction(CompareVacancies):
     def __init__(self, name_vacancy):
         super().__init__(name_vacancy)
-        self.get_vacancy_from_api()
         self.vacancies_list = defaultdict(list)
+
+    def __repr__(self):
+        return f"Vacancies list: {self.vacancies_list}"
 
     def __str__(self):
         self.message = "Vacancy not found" if len(self.all_vacancy) < 2 else self.message
