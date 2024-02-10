@@ -29,12 +29,11 @@ def test_get_vacancy_from_api():
 def test_save_info_valid():
     vacancy1 = GetVacancies('python')
 
-    assert isinstance(vacancy1.all, list)
-    assert len(vacancy1.all) > 0
+    assert isinstance(vacancy1.all_vacancy, list)
+    assert len(vacancy1.all_vacancy) > 0
 
 
 def test_save_info_zero_len():
     vacancy1 = GetVacancies(1)
 
-    vacancy1.save_info()
-    assert vacancy1.message == "Vacancy not found"
+    assert vacancy1.save_info() == "Vacancy not found"
