@@ -3,7 +3,7 @@ import json
 import pytest
 
 from config import DATA_TEST
-from src.CompareVacancies import CompareVacancies
+from src.Vacancy import CompareVacancies
 
 
 @pytest.fixture
