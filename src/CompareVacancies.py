@@ -8,6 +8,10 @@ class CompareVacancies(ApiHH):
         self.sort_salary: dict = defaultdict(list)
         self.top_salary: dict = defaultdict(list)
 
+    def __repr__(self):
+        return (f"Sorted list: {self.sort_salary}\n"
+                f"Top list: {self.top_salary}")
+
     def sorted_salary(self, list_all: list, salary: int, city: str) -> dict:
         """
            Generate dict with necessary salary
