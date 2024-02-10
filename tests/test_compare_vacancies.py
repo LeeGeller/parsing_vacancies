@@ -1,5 +1,5 @@
 from src.CompareVacancies import CompareVacancies
-from src.GetVacancies import GetVacancies
+from src.ApiHH import GetVacancies
 
 
 def test_compare_vacancies_is_subclass_get_vacancies():
