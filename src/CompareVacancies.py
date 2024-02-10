@@ -17,7 +17,7 @@ class CompareVacancies(ApiHH):
         for vacancy in list_all:
             if vacancy["salary"] is not None and vacancy["salary"]["from"] is not None:
                 if vacancy["area"]["name"] == city:
-                    if vacancy["salary"]['from'] >= salary and vacancy["salary"]['from'] is not None:
+                    if vacancy["salary"]['from'] == salary and vacancy["salary"]['from'] is not None:
                         self.sort_salary[vacancy["salary"]['from']].append(vacancy)
         return self.sort_salary
 
