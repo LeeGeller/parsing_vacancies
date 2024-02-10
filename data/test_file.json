@@ -1,41 +1,29 @@
 [
   {
     "area": {
-      "id": "2",
-      "name": "Санкт-Петербург",
-      "url": "https://api.hh.ru/areas/2"
+      "name": "Санкт-Петербург"
     },
     "salary": {
       "from": 80000,
-      "to": 80000,
-      "currency": "RUR",
-      "gross": false
+      "to": 80000
     }
   },
   {
     "area": {
-      "id": "2",
-      "name": "Москва",
-      "url": "https://api.hh.ru/areas/2"
+      "name": "Москва"
     },
     "salary": {
       "from": null,
-      "to": 80000,
-      "currency": "RUR",
-      "gross": false
+      "to": 80000
     }
   },
   {
     "area": {
-      "id": "2",
-      "name": "Москва",
-      "url": "https://api.hh.ru/areas/2"
+      "name": "Москва"
     },
     "salary": {
       "from": 50000,
-      "to": 80000,
-      "currency": "RUR",
-      "gross": false
+      "to": 80000
     }
   }
 ]
