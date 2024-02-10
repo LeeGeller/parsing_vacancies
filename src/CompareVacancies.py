@@ -1,8 +1,8 @@
-from src.GetVacancies import GetVacancies
+from src.ApiHH import ApiHH
 from collections import defaultdict
 
 
-class CompareVacancies(GetVacancies):
+class CompareVacancies(ApiHH):
     def __init__(self, name_vacancy: str):
         super().__init__(name_vacancy)
         self.sort_salary: dict = defaultdict(list)
