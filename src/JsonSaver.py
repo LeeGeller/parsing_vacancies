@@ -15,10 +15,3 @@ class JsonSaver(AbstractJsonSaver):
         """Read file"""
         with open(DATA, encoding='utf-8') as file:
             return json.load(file)
-
-
-v = GetApiHh()
-v.get_vacancy_from_api('python')
-j = JsonSaver()
-j.save_file(v.all_vacancy)
-print(j.read_file())
