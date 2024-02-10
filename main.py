@@ -12,6 +12,7 @@ def main():
         print("\nPlease, text number or 'Enter...\n")
 
     user = UserInteraction(user_input)
+    user.get_vacancy_from_api()
 
     while True:
         users_city = input("Now, you need text your city:\n").capitalize()
