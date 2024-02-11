@@ -31,5 +31,24 @@
       "from": 50000,
       "to": 80000
     }
+  },
+  {
+    "name": "Vacancy4",
+    "alternate_url": "URL4",
+    "area": {
+      "name": "Москва"
+    },
+    "salary": null
+  },
+  {
+    "name": "Vacancy4",
+    "alternate_url": "URL4",
+    "area": {
+      "name": "Москва"
+    },
+    "salary": {
+      "from": 80000,
+      "to": 150000
+    }
   }
 ]
