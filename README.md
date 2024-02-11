@@ -9,6 +9,7 @@
 
 Получаем инфо по API HH:  
 * [GetApiHh.py](https://github.com/LeeGeller/work_with_API_hh/blob/main/src/GetApiHh.py)
+  
 Возможность работать с файлами:
 * [JsonSaver.py](https://github.com/LeeGeller/work_with_API_hh/blob/main/src/JsonSaver.py)
 * save_file - сохранять
