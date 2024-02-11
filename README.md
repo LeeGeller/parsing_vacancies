@@ -2,6 +2,6 @@
 
 **Структура**
 
-#Абстрактные классы:
+*Абстрактные классы:*
 AbstractGetApiHh.py
 AbstractJsonSaver.py
