@@ -4,28 +4,31 @@ from src.Vacancy import Vacancy
 
 
 class Vacancies(Vacancy):
-    vacansies_for_user = []
-
-    def __init__(self, list_vacancies):
-        for vacancy in list_vacancies:
-            self.vacansies_for_user.append(vacancy)
 
     @classmethod
-    def get_vacancy_list(cls, name_vacancy, salary_from, salary_to, url, city):
+    def get_vacancy_list(cls, vacancies, city: str, salary_from: int) -> list:
+        """
+        Get list with vacancies dicts. This list with copy of class Vacancy
+        :return: new lisrt with copy of class Vacancy
+        """
         new_list = []
-        for vacancy in cls.vacansies_for_user:
+        for vacancy in vacancies:
             name_vacancy = vacancy["name"]
-            url = vacancy["name"]["alternate_url"]
-            city = vacancy["area"]["name"]
-            if vacancy["salary"] is None or vacancy["salary"]["from"] is None:
-                salary_from = 0
+            url = vacancy["alternate_url"]
+            if vacancy["area"]["name"] == city:
+                city = vacancy["area"]["name"]
+            if vacancy["salary"] is None:
+                continue
+            elif vacancy["salary"]["to"] is not None and vacancy["salary"]["from"] is not None:
+                if vacancy["salary"]["from"] == salary_from:
+                    salary_from = vacancy["salary"]["from"]
+                    salary_to = vacancy["salary"]["to"]
+                else:
+                    continue
             else:
-                salary_from = vacancy["salary"]["from"]
-            if vacancy["salary"] is None or vacancy["salary"]["to"] is not None:
-                salary_to = vacancy["salary"]["to"]
-            else:
-                salary_to = 0
+                continue
             new_list.append(cls(name_vacancy, salary_from, salary_to, url, city))
+        return new_list
 
 
 response = GetApiHh()
@@ -33,5 +36,6 @@ response.get_vacancy_from_api('python')
 file_json = JsonSaver()
 file_json.save_file(response.all_vacancy)
 file_vacancies = file_json.read_file()
-vacancy = Vacancies(file_vacancies)
-print(vacancy.vacansies_for_user)
+vacancy = Vacancies.get_vacancy_list(file_vacancies, 'Москва', 50000)
+
+print(sorted(vacancy))
