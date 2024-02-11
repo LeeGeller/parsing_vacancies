@@ -37,13 +37,12 @@ class Vacancy:
             if vacancy["salary"] is None:
                 continue
             elif vacancy["salary"]["to"] is not None and vacancy["salary"]["from"]:
-                if vacancy["salary"]["from"] == salary_from:
+                if vacancy["salary"]["from"] >= salary_from:
                     salary_from = vacancy["salary"]["from"]
                     salary_to = vacancy["salary"]["to"]
+                    cls(name_vacancy, salary_from, salary_to, url, city)
                 else:
                     continue
             else:
                 continue
-            cls(name_vacancy, salary_from, salary_to, url, city)
         return cls.list_vacancies
-
