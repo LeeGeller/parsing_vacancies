@@ -6,8 +6,11 @@
 # from src.Vacancy import CompareVacancies
 #
 #
+import json
+
 import pytest
 
+from config import DATA_TEST
 from src.GetApiHh import GetApiHh
 from src.JsonSaver import JsonSaver
 
@@ -33,18 +36,7 @@ def fixture_class_list():
     return json_saver
 
 
-# @pytest.fixture
-# def fixture_class_number():
-#     return CompareVacancies(1)
-#
-#
-# @pytest.fixture
-# def fixture_class_some_str():
-#     return CompareVacancies('666999')
-#
-#
-# @pytest.fixture
-# def fixture_data():
-#     with open(DATA_TEST, encoding='utf-8') as file:
-#         return json.loads(file.read())
-#
+@pytest.fixture
+def new_file():
+    with open(DATA_TEST, encoding='utf-8') as file:
+        return json.load(file)
