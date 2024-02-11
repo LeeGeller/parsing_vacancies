@@ -1,5 +1,7 @@
 [
   {
+    "name": "Vacancy1",
+    "alternate_url": "URL1",
     "area": {
       "name": "Санкт-Петербург"
     },
@@ -9,6 +11,8 @@
     }
   },
   {
+    "name": "Vacancy2",
+    "alternate_url": "URL2",
     "area": {
       "name": "Москва"
     },
@@ -18,6 +22,8 @@
     }
   },
   {
+    "name": "Vacancy3",
+    "alternate_url": "URL3",
     "area": {
       "name": "Москва"
     },
