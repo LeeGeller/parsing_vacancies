@@ -1,6 +1,4 @@
-from src.GetApiHh import GetApiHh
-from src.JsonSaver import JsonSaver
-from src.Vacancy import Vacancy
+from src.parsing_hh import GetApiHh, JsonSaver, Vacancy
 
 response = GetApiHh()
 
