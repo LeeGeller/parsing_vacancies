@@ -1,6 +1,6 @@
 from abc import ABC
 
-from src.AbstractGetApiHh import AbstractGetApiHh
+from src.parsing_hh import AbstractGetApiHh
 from src.GetApiHh import GetApiHh
 
 
