@@ -1,9 +1,11 @@
 import json
 from abc import ABC, abstractmethod
-
+from typing import Any
 import requests
+from config import config
 
 from config import DATA
+import psycopg2
 
 
 class AbstractGetApiHh(ABC):
@@ -96,7 +98,14 @@ class Vacancy:
             return True
 
     @staticmethod
-    def sorted_vacancy_list(list_vacancy: list, city: str, salary_from) -> list:
+    def sorted_vacancy_list(list_vacancy: list, city: str, salary_from) -> list[dict[str: Any]]:
+        """
+        Sorted list arguments.
+        :param list_vacancy: list with info about vacancies
+        :param city: city, which choice user
+        :param salary_from: salary, which choice user
+        :return: new sorted list
+        """
         new_list = list()
 
         for vacancy in list_vacancy:
@@ -131,9 +140,69 @@ class Vacancy:
         return cls.list_vacancies
 
 
+class DBManager:
+    def create_data_base(self, name_db: str, params: dict) -> None:
+        """
+        Create database and tables.
+        :param params: parameters for connect with postgresql
+        :param name_db: name of database
+        """
+
+        conn = psycopg2.connect(dbname='postgres', **params)
+        conn.autocommit = True
+
+        cur = conn.cursor()
+        cur.execute(f'DROP DATABASE {name_db}')
+        cur.execute(f'CREATE DATABASE {name_db}')
+
+        cur.close()
+        conn.close()
+        print("Database created")
+
+    def create_table(self, name_db: str, params: dict) -> None:
+        """
+        Create table for database.
+        :param name_db: name of database
+        :param params: parameters for connect with postgresql
+        """
+        with psycopg2.connect(dbname=name_db, **params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+            CREATE TABLE info_vacancies (
+                vacancy_id SERIAL PRIMARY KEY,
+                name_vacancy VARCHAR(255) NOT NULL,
+                salary_from INTEGER,
+                salary_to INTEGER,
+                city VARCHAR(100),
+                url TEXT
+            )
+        """)
+        conn.close()
+        print("Tables created")
+
+    def save_data_to_database(self, data_file: list[dict[str: Any]], name_bd: str, params: dict) -> None:
+        """
+        Save data info about vacancies.
+        :param data_file: info about vacancies for save
+        :param name_bd: name of database
+        :param params: parameters for connect with postgresql
+        """
+
+        conn = psycopg2.connect(dbname=name_bd, **params)
+        with conn.cursor() as cur:
+            for data in data_file:
+                count_columns = '%s ' * len(data)
+                val = tuple(data.values())
+                cur.execute(f"INSERT INTO info_vacancies (name_vacancy, salary_from, salary_to, city, url) "
+                            f"VALUES({', '.join(count_columns.split())})", val)
+        conn.commit()
+        conn.close()
+        print(f"Info about vacancies save in database: {name_bd} in table info_vacancies.")
+
+
 response = GetApiHh()
 # Get vacancies for user
-response.get_vacancy_from_api('менеджер')
+response.get_vacancy_from_api('разработчик')
 
 file_json = JsonSaver()
 
@@ -148,4 +217,11 @@ sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
 vacancy = Vacancy.get_vacancy_list(sorted_list)
 sorted_vacancies = sorted(vacancy)
 
-print(*sorted_vacancies)
+print(*sorted_vacancies[:3])
+
+d_base = DBManager()
+params = config()
+d_base.create_data_base('vacancies', params)
+d_base.create_table('vacancies', params)
+
+d_base.save_data_to_database(sorted_list, 'vacancies', params)
