@@ -95,12 +95,10 @@ class Vacancy:
         if other.salary_to < self.salary_to:
             return True
 
-    @classmethod
-    def get_vacancy_list(cls, list_vacancy, city, salary_from) -> list:
-        """
-        Get list with vacancies dicts. This list with copy of class Vacancy
-        :return: new lisrt with copy of class Vacancy
-        """
+    @staticmethod
+    def sorted_vacancy_list(list_vacancy: list, city: str, salary_from) -> list:
+        new_list = list()
+
         for vacancy in list_vacancy:
             name_vacancy = vacancy["name"]
             url = vacancy["alternate_url"]
@@ -108,13 +106,46 @@ class Vacancy:
                 city = vacancy["area"]["name"]
             if vacancy["salary"] is None:
                 continue
-            elif vacancy["salary"]["to"] is not None and vacancy["salary"]["from"]:
+            elif vacancy["salary"]["from"] and vacancy["salary"]["to"]:
                 if vacancy["salary"]["from"] >= salary_from:
                     salary_from = vacancy["salary"]["from"]
                     salary_to = vacancy["salary"]["to"]
-                    cls(name_vacancy, salary_from, salary_to, url, city)
+                    new_list.append(
+                        {'Name vacancy': name_vacancy, 'Salary from': salary_from, 'Salary to': salary_to, 'URL': url,
+                         'City': city})
                 else:
                     continue
             else:
                 continue
+        return new_list
+
+    @classmethod
+    def get_vacancy_list(cls, list_vacancy: list) -> list:
+        """
+        Get list with vacancies dicts. This list with copy of class Vacancy
+        :return: new lisrt with copy of class Vacancy
+        """
+        for vacancy in list_vacancy:
+            cls(vacancy['Name vacancy'], vacancy['Salary from'], vacancy['Salary to'], vacancy['URL'],
+                vacancy['City'])
         return cls.list_vacancies
+
+
+response = GetApiHh()
+# Get vacancies for user
+response.get_vacancy_from_api('менеджер')
+
+file_json = JsonSaver()
+
+# Save response to JSON
+file_json.save_file(response.all_vacancy)
+
+# Read JSON file
+file_vacancies = file_json.read_file()
+
+sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
+# Print vacancies for user
+vacancy = Vacancy.get_vacancy_list(sorted_list)
+sorted_vacancies = sorted(vacancy)
+
+print(*sorted_vacancies)
