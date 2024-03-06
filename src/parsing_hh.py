@@ -202,7 +202,7 @@ class DBManager:
 
 response = GetApiHh()
 # Get vacancies for user
-response.get_vacancy_from_api('разработчик')
+response.get_vacancy_from_api('оператор')
 
 file_json = JsonSaver()
 
@@ -217,7 +217,7 @@ sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
 vacancy = Vacancy.get_vacancy_list(sorted_list)
 sorted_vacancies = sorted(vacancy)
 
-print(*sorted_vacancies[:3])
+print(*sorted_vacancies[:10])
 
 d_base = DBManager()
 params = config()
