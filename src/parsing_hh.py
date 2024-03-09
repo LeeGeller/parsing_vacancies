@@ -98,32 +98,22 @@ class Vacancy:
             return True
 
     @staticmethod
-    def sorted_vacancy_list(list_vacancy: list, city: str, salary_from) -> list[dict[str: Any]]:
+    def sorted_vacancy_list(list_vacancy: list) -> list[dict[str: Any]]:
         """
         Sorted list arguments.
         :param list_vacancy: list with info about vacancies
-        :param city: city, which choice user
-        :param salary_from: salary, which choice user
         :return: new sorted list
         """
         new_list = list()
 
         for vacancy in list_vacancy:
-            name_vacancy = vacancy["name"]
-            url = vacancy["alternate_url"]
-            if vacancy["area"]["name"] == city:
-                city = vacancy["area"]["name"]
             if vacancy["salary"] is None:
                 continue
             elif vacancy["salary"]["from"] and vacancy["salary"]["to"]:
-                if vacancy["salary"]["from"] >= salary_from:
-                    salary_from = vacancy["salary"]["from"]
-                    salary_to = vacancy["salary"]["to"]
-                    new_list.append(
-                        {'Name vacancy': name_vacancy, 'Salary from': salary_from, 'Salary to': salary_to, 'URL': url,
-                         'City': city})
-                else:
-                    continue
+                new_list.append(
+                    {'Name vacancy': vacancy["name"], 'Salary from': vacancy["salary"]["from"],
+                     'Salary to': vacancy["salary"]["to"], 'URL': vacancy["alternate_url"],
+                     'City': vacancy["area"]["name"]})
             else:
                 continue
         return new_list
@@ -202,26 +192,26 @@ class DBManager:
 
 response = GetApiHh()
 # Get vacancies for user
-response.get_vacancy_from_api('оператор')
+print(response.get_vacancy_from_api('оператор'))
 
-file_json = JsonSaver()
-
-# Save response to JSON
-file_json.save_file(response.all_vacancy)
-
-# Read JSON file
-file_vacancies = file_json.read_file()
-
-sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
-# Print vacancies for user
-vacancy = Vacancy.get_vacancy_list(sorted_list)
-sorted_vacancies = sorted(vacancy)
-
-print(*sorted_vacancies[:10])
-
-d_base = DBManager()
-params = config()
-d_base.create_data_base('vacancies', params)
-d_base.create_table('vacancies', params)
-
-d_base.save_data_to_database(sorted_list, 'vacancies', params)
+# file_json = JsonSaver()
+#
+# # Save response to JSON
+# file_json.save_file(response.all_vacancy)
+#
+# # Read JSON file
+# file_vacancies = file_json.read_file()
+#
+# sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
+# # Print vacancies for user
+# vacancy = Vacancy.get_vacancy_list(sorted_list)
+# sorted_vacancies = sorted(vacancy)
+#
+# print(*sorted_vacancies[:10])
+#
+# d_base = DBManager()
+# params = config()
+# d_base.create_data_base('vacancies', params)
+# d_base.create_table('vacancies', params)
+#
+# d_base.save_data_to_database(sorted_list, 'vacancies', params)
