@@ -23,16 +23,28 @@ class GetApiHh(AbstractGetApiHh):
 
     def __init__(self):
         self.all_vacancy = []
+        self.employer_info = []
 
     def __repr__(self):
         return f"{self.all_vacancy}"
 
     def get_vacancy_from_api(self, name_vacancy) -> list:
         """Get valid info about vacancies for user"""
-        keys_response = {'text': f'NAME:{name_vacancy}', 'area': 113, 'per_page': 100, }
+        keys_response = {'text': {name_vacancy}, 'area': 113, 'per_page': 100, }
         info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
         self.all_vacancy = json.loads(info.text)['items']
         return self.all_vacancy
+
+    def get_info_about_employer(self, employer_id: int) -> list:
+        """Get valid info about employer for user"""
+        info = requests.get(f'https://api.hh.ru/employers/{employer_id}')
+        self.employer_info = json.loads(info.text)
+        return self.employer_info
+
+    def get_vacancies_from_employer(self, employer_id: int) -> list:
+        """Get all vacancies from employer for user"""
+        info = requests.get(f'https://api.hh.ru/vacancies?{employer_id}')
+        return json.loads(info.text)
 
 
 class AbstractJsonSaver(ABC):
@@ -78,20 +90,27 @@ class JsonSaver(AbstractJsonSaver):
 class Vacancy:
     list_vacancies = []
 
-    def __init__(self, name_vacancy: str, salary_from: int, salary_to: int, url: str, city: str):
+    def __init__(self, name_vacancy: str, salary_from: int, salary_to: int, employer_id: int, employer_name: str,
+                 url: str, city: str, experience: str):
         self.name_vacancy = name_vacancy
         self.salary_from = salary_from
         self.salary_to = salary_to
+        self.employer_id = employer_id
+        self.employer_name = employer_name
         self.url = url
         self.city = city
+        self.experience = experience
         self.list_vacancies.append(self)
 
     def __repr__(self):
         return (f"\nName of vacancy: {self.name_vacancy}\n"
                 f"Salary from: {self.salary_from}\n"
                 f"Salary to: {self.salary_to}\n"
+                f"Employer id: {self.employer_id}"
+                f"Employer name: {self.employer_name}"
                 f"City: {self.city}\n"
-                f"URL: {self.url}\n")
+                f"URL: {self.url}\n"
+                f"Experience: {self.experience}")
 
     def __lt__(self, other):
         if other.salary_to < self.salary_to:
@@ -112,8 +131,10 @@ class Vacancy:
             elif vacancy["salary"]["from"] and vacancy["salary"]["to"]:
                 new_list.append(
                     {'Name vacancy': vacancy["name"], 'Salary from': vacancy["salary"]["from"],
-                     'Salary to': vacancy["salary"]["to"], 'URL': vacancy["alternate_url"],
-                     'City': vacancy["area"]["name"]})
+                     'Salary to': vacancy["salary"]["to"], 'Employer id': vacancy["employer"]["id"],
+                     'Employer name': vacancy["employer"]["name"],
+                     'URL': vacancy["alternate_url"],
+                     'City': vacancy["area"]["name"], 'Experience': vacancy["experience"]["name"]})
             else:
                 continue
         return new_list
@@ -125,8 +146,9 @@ class Vacancy:
         :return: new lisrt with copy of class Vacancy
         """
         for vacancy in list_vacancy:
-            cls(vacancy['Name vacancy'], vacancy['Salary from'], vacancy['Salary to'], vacancy['URL'],
-                vacancy['City'])
+            cls(vacancy['Name vacancy'], vacancy['Salary from'], vacancy['Salary to'],
+                vacancy['Employer id'], vacancy['Employer name'], vacancy['URL'],
+                vacancy['City'], vacancy['Experience'])
         return cls.list_vacancies
 
 
@@ -191,18 +213,16 @@ class DBManager:
 
 
 response = GetApiHh()
-# Get vacancies for user
-print(response.get_vacancy_from_api('оператор'))
+# Get vacancies for user and info about employer
+vacancies = response.get_vacancy_from_api('оператор')
 
-# file_json = JsonSaver()
-#
-# # Save response to JSON
-# file_json.save_file(response.all_vacancy)
-#
-# # Read JSON file
-# file_vacancies = file_json.read_file()
-#
-# sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, 'Москва', 0)
+sorted_list = Vacancy.sorted_vacancy_list(response.all_vacancy)
+print(sorted_list)
+
+response.get_info_about_employer(8916366)
+print(response.employer_info)
+print(response.get_vacancies_from_employer(8916366))
+
 # # Print vacancies for user
 # vacancy = Vacancy.get_vacancy_list(sorted_list)
 # sorted_vacancies = sorted(vacancy)
