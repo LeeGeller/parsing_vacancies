@@ -90,27 +90,19 @@ class JsonSaver(AbstractJsonSaver):
 class Vacancy:
     list_vacancies = []
 
-    def __init__(self, name_vacancy: str, salary_from: int, salary_to: int, employer_id: int, employer_name: str,
+    def __init__(self, name_vacancy: str, salary_from: int, salary_to: int, employer_id: int,
                  url: str, city: str, experience: str):
         self.name_vacancy = name_vacancy
         self.salary_from = salary_from
         self.salary_to = salary_to
         self.employer_id = employer_id
-        self.employer_name = employer_name
         self.url = url
         self.city = city
         self.experience = experience
-        self.list_vacancies.append(self)
 
     def __repr__(self):
-        return (f"\nName of vacancy: {self.name_vacancy}\n"
-                f"Salary from: {self.salary_from}\n"
-                f"Salary to: {self.salary_to}\n"
-                f"Employer id: {self.employer_id}"
-                f"Employer name: {self.employer_name}"
-                f"City: {self.city}\n"
-                f"URL: {self.url}\n"
-                f"Experience: {self.experience}")
+        return (f"Name{self.name_vacancy}, {self.salary_from}, {self.salary_to}, "
+                f"{self.employer_id}, {self.url}, {self.city}, {self.experience}")
 
     def __lt__(self, other):
         if other.salary_to < self.salary_to:
@@ -125,16 +117,15 @@ class Vacancy:
         """
         new_list = list()
 
-        for vacancy in list_vacancy:
-            if vacancy["salary"] is None:
+        for vacancy_info in list_vacancy:
+            if vacancy_info["salary"] is None:
                 continue
-            elif vacancy["salary"]["from"] and vacancy["salary"]["to"]:
+            elif vacancy_info["salary"]["from"] and vacancy_info["salary"]["to"]:
                 new_list.append(
-                    {'Name vacancy': vacancy["name"], 'Salary from': vacancy["salary"]["from"],
-                     'Salary to': vacancy["salary"]["to"], 'Employer id': vacancy["employer"]["id"],
-                     'Employer name': vacancy["employer"]["name"],
-                     'URL': vacancy["alternate_url"],
-                     'City': vacancy["area"]["name"], 'Experience': vacancy["experience"]["name"]})
+                    {'Name vacancy': vacancy_info["name"], 'Salary from': vacancy_info["salary"]["from"],
+                     'Salary to': vacancy_info["salary"]["to"], 'Employer id': vacancy_info["employer"]["id"],
+                     'URL': vacancy_info["alternate_url"],
+                     'City': vacancy_info["area"]["name"], 'Experience': vacancy_info["experience"]["name"]})
             else:
                 continue
         return new_list
@@ -146,92 +137,127 @@ class Vacancy:
         :return: new lisrt with copy of class Vacancy
         """
         for vacancy in list_vacancy:
-            cls(vacancy['Name vacancy'], vacancy['Salary from'], vacancy['Salary to'],
-                vacancy['Employer id'], vacancy['Employer name'], vacancy['URL'],
-                vacancy['City'], vacancy['Experience'])
+            cls.list_vacancies.append([(cls(vacancy['Name vacancy'], vacancy['Salary from'], vacancy['Salary to'],
+                                            vacancy['Employer id'], vacancy['URL'],
+                                            vacancy['City'], vacancy['Experience']))])
         return cls.list_vacancies
 
 
 class DBManager:
-    def create_data_base(self, name_db: str, params: dict) -> None:
+
+    def __init__(self, params: dict):
+        self.params = params
+
+    def create_data_base(self, name_db: str) -> None:
         """
         Create database and tables.
-        :param params: parameters for connect with postgresql
         :param name_db: name of database
         """
 
-        conn = psycopg2.connect(dbname='postgres', **params)
+        conn = psycopg2.connect(dbname='postgres', **self.params)
         conn.autocommit = True
 
         cur = conn.cursor()
+
         cur.execute(f'DROP DATABASE {name_db}')
         cur.execute(f'CREATE DATABASE {name_db}')
 
-        cur.close()
-        conn.close()
-        print("Database created")
+        return "Database created"
 
-    def create_table(self, name_db: str, params: dict) -> None:
+    def create_tables(self, name_db: str) -> None:
         """
         Create table for database.
         :param name_db: name of database
-        :param params: parameters for connect with postgresql
         """
-        with psycopg2.connect(dbname=name_db, **params) as conn:
+
+        with psycopg2.connect(dbname=name_db, **self.params) as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-            CREATE TABLE info_vacancies (
+                CREATE TABLE info_vacancies (
                 vacancy_id SERIAL PRIMARY KEY,
                 name_vacancy VARCHAR(255) NOT NULL,
                 salary_from INTEGER,
                 salary_to INTEGER,
+                employer_id INTEGER UNIQUE,
+                url TEXT,
                 city VARCHAR(100),
-                url TEXT
+                experience TEXT
             )
-        """)
-        conn.close()
-        print("Tables created")
+            """)
 
-    def save_data_to_database(self, data_file: list[dict[str: Any]], name_bd: str, params: dict) -> None:
+                cur.execute("""
+                CREATE TABLE info_employers (
+                employer_id INTEGER,
+                company_name VARCHAR(255) NOT NULL,
+                description text,
+                vacancies_url TEXT,
+                
+                FOREIGN KEY (employer_id)  REFERENCES info_vacancies (employer_id) ON DELETE CASCADE
+                )
+            """)
+        conn.close()
+        return "Tables created"
+
+    def save_data_to_database(self, vacancies_file: list[dict[str: Any]], company_data: list[dict[str: Any]],
+                              name_bd: str) -> None:
         """
         Save data info about vacancies.
         :param data_file: info about vacancies for save
         :param name_bd: name of database
-        :param params: parameters for connect with postgresql
         """
 
-        conn = psycopg2.connect(dbname=name_bd, **params)
+        conn = psycopg2.connect(dbname=name_bd, **self.params)
+        conn.autocommit = True
         with conn.cursor() as cur:
-            for data in data_file:
+            for data in vacancies_file:
+                count_columns = '%s ' * len(vacancies_file)
+                val = data
+                cur.execute(f"INSERT INTO info_vacancies (name_vacancy, salary_from, salary_to,"
+                            f"employer_id, url, city, experience) "
+                            f"VALUES({', '.join(count_columns.split())})", val)
+
+            for data in company_data:
                 count_columns = '%s ' * len(data)
                 val = tuple(data.values())
-                cur.execute(f"INSERT INTO info_vacancies (name_vacancy, salary_from, salary_to, city, url) "
+                cur.execute(f"INSERT INTO info_employers (employer_id, company_name, description,"
+                            f"vacancies_url)"
                             f"VALUES({', '.join(count_columns.split())})", val)
         conn.commit()
         conn.close()
-        print(f"Info about vacancies save in database: {name_bd} in table info_vacancies.")
+        return f"Info about vacancies save in database: {name_bd} in table info_vacancies."
 
 
 response = GetApiHh()
 # Get vacancies for user and info about employer
-vacancies = response.get_vacancy_from_api('оператор')
+response.get_vacancy_from_api('оператор')
 
+# Sorted vacancies list
 sorted_list = Vacancy.sorted_vacancy_list(response.all_vacancy)
-print(sorted_list)
+vacancy = Vacancy.get_vacancy_list(sorted_list)
+sorted_vacancies = sorted(vacancy)
 
-response.get_info_about_employer(8916366)
-print(response.employer_info)
-print(response.get_vacancies_from_employer(8916366))
+# Get info about top employers
+list_info_top_employers = []
 
-# # Print vacancies for user
-# vacancy = Vacancy.get_vacancy_list(sorted_list)
-# sorted_vacancies = sorted(vacancy)
-#
-# print(*sorted_vacancies[:10])
-#
-# d_base = DBManager()
-# params = config()
-# d_base.create_data_base('vacancies', params)
-# d_base.create_table('vacancies', params)
-#
-# d_base.save_data_to_database(sorted_list, 'vacancies', params)
+for id_employers in sorted_vacancies[:10]:
+    print(id_employers)
+    # employer = response.get_info_about_employer(id_employers[3])
+#     list_info_top_employers.append({'Employer id': employer['id'], 'Employer name': employer['name'],
+#                                     'Employer description': employer['description'],
+#                                     'Vacancies URL': employer['vacancies_url']})
+
+# vacancies_of_top_employer.append()
+
+# Connect to BD
+params = config()
+d_base = DBManager(params)
+
+# Create BD
+print(d_base.create_data_base('vacancies'))
+
+# Create table about vacancies and employers info
+print(d_base.create_tables('vacancies'))
+
+# Save info in BD
+# print(d_base.save_data_to_database(sorted_vacancies[:10], list_info_employers, 'vacancies'))
+print(sorted_vacancies)
