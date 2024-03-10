@@ -1,11 +1,12 @@
 import json
 from abc import ABC, abstractmethod
 from typing import Any
+
+import psycopg2
 import requests
-from config import config
 
 from config import DATA
-import psycopg2
+from config import config
 
 
 class AbstractGetApiHh(ABC):
@@ -34,6 +35,17 @@ class GetApiHh(AbstractGetApiHh):
         info = requests.get(f'https://api.hh.ru/vacancies', keys_response)
         self.all_vacancy = json.loads(info.text)['items']
         return self.all_vacancy
+
+    def get_employers_info(self, employers_id):
+        """For in employers_id and get list with info about employers"""
+        employers_info = []
+        for id_employer in employers_id:
+            employer_info = self.get_info_about_employer(id_employer)
+            employers_info.append({'Employer id': employer_info['id'], 'Employer name': employer_info['name'],
+                                   'Employer description': employer_info['alternate_url'],
+                                   'Employer vacancies': employer_info['vacancies_url'],
+                                   'Open vacancies': employer_info['open_vacancies']})
+        return employers_info
 
     def get_info_about_employer(self, employer_id: int) -> list:
         """Get valid info about employer for user"""
@@ -104,7 +116,7 @@ class Vacancy:
             return True
 
     @staticmethod
-    def sorted_vacancy_list(list_vacancy: list) -> list[dict[str: Any]]:
+    def clean_vacancy_list(list_vacancy: list) -> list[dict[str: Any]]:
         """
         Sorted list arguments.
         :param list_vacancy: list with info about vacancies
@@ -148,7 +160,6 @@ class DBManager:
         Create database and tables.
         :param name_db: name of database
         """
-
         conn = psycopg2.connect(dbname='postgres', **self.params)
         conn.autocommit = True
 
@@ -185,6 +196,7 @@ class DBManager:
                 company_name VARCHAR(255),
                 description text,
                 vacancies_url TEXT,
+                open_vacancies INTEGER,
                 CONSTRAINT pk_info_employers_employer_id PRIMARY KEY (employer_id)
                 )
             """)
@@ -214,11 +226,43 @@ class DBManager:
                 count_columns = '%s ' * len(data)
                 val = tuple(data.values())
                 cur.execute(f"INSERT INTO info_employers (employer_id, company_name, description,"
-                            f"vacancies_url)"
+                            f"vacancies_url, open_vacancies)"
                             f"VALUES({', '.join(count_columns.split())})", val)
-        conn.commit()
         conn.close()
         return f"Info about vacancies save in database: {name_bd} in tables."
+
+    def get_companies_and_vacancies_count(self, name_bd: str) -> list[tuple]:
+        """
+        Get list of companies and count of vacancies
+        :param name_bd: name of database
+        :return: a list with tuple with info about company name
+        and count vacancies
+        """
+        with psycopg2.connect(dbname=name_bd, **self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT company_name, open_vacancies FROM info_employers
+                                    ORDER BY open_vacancies DESC""")
+                company_and_vacancies = cur.fetchall()
+        conn.close()
+        return company_and_vacancies[:10]
+
+    def get_all_vacancies(self, name_bd: str) -> list[tuple]:
+        """
+        Get all info about vacancies and name of company.
+        :param name_bd: name of database
+        :return: info about vacancies and name of company
+        """
+
+        with psycopg2.connect(dbname=name_bd, **self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT company_name, i.name_vacancy, i.salary_from, i.salary_to, i.url 
+                            FROM info_employers
+                            JOIN info_vacancies AS i USING(employer_id)
+                            ORDER BY (i.salary_to+i.salary_from)/2 DESC""")
+
+                vacancies_info = cur.fetchall()
+        conn.close()
+        return vacancies_info
 
 
 response = GetApiHh()
@@ -227,7 +271,7 @@ response.get_vacancy_from_api('оператор')
 vacancies_list = response.all_vacancy
 
 # Get clean vacancies list
-clean_vacancies_list = Vacancy.sorted_vacancy_list(vacancies_list)
+clean_vacancies_list = Vacancy.clean_vacancy_list(vacancies_list)
 
 # Get employers id
 employers_id = []
@@ -236,12 +280,7 @@ for info in clean_vacancies_list:
     employers_id.append(info.get('Employer id'))
 
 # Get info about employers
-employers_info = []
-for id_employer in set(employers_id):
-    employer_info = response.get_info_about_employer(id_employer)
-    employers_info.append({'Employer id': employer_info['id'], 'Employer name': employer_info['name'],
-                           'Employer description': employer_info['alternate_url'],
-                           'Employer vacancies': employer_info['vacancies_url']})
+employers_info = response.get_employers_info(set(employers_id))
 
 # Create database
 params = config()
@@ -254,3 +293,11 @@ print(database.create_tables('vacancies'))
 
 # Save info about vacancies and employers in database
 print(database.save_data_to_database(clean_vacancies_list, employers_info, 'vacancies'))
+
+# Get info about companies and their count of vacancies
+for row in database.get_companies_and_vacancies_count('vacancies'):
+    print(f"Company '{row[0]}':\nCount vacancies: {row[1]}\n")
+
+# Get info about vacancies
+for row in database.get_all_vacancies('vacancies'):
+    print(row)
