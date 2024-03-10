@@ -41,11 +41,6 @@ class GetApiHh(AbstractGetApiHh):
         self.employer_info = json.loads(info.text)
         return self.employer_info
 
-    def get_vacancies_from_employer(self, employer_id: int) -> list:
-        """Get all vacancies from employer for user"""
-        info = requests.get(f'https://api.hh.ru/vacancies?{employer_id}')
-        return json.loads(info.text)
-
 
 class AbstractJsonSaver(ABC):
 
@@ -178,21 +173,19 @@ class DBManager:
                 name_vacancy VARCHAR(255) NOT NULL,
                 salary_from INTEGER,
                 salary_to INTEGER,
-                employer_id INTEGER UNIQUE,
+                employer_id INTEGER,
                 url TEXT,
                 city VARCHAR(100),
                 experience TEXT
             )
             """)
-
                 cur.execute("""
                 CREATE TABLE info_employers (
                 employer_id INTEGER,
-                company_name VARCHAR(255) NOT NULL,
+                company_name VARCHAR(255),
                 description text,
                 vacancies_url TEXT,
-                
-                FOREIGN KEY (employer_id)  REFERENCES info_vacancies (employer_id) ON DELETE CASCADE
+                CONSTRAINT pk_info_employers_employer_id PRIMARY KEY (employer_id)
                 )
             """)
         conn.close()
@@ -202,7 +195,8 @@ class DBManager:
                               name_bd: str) -> None:
         """
         Save data info about vacancies.
-        :param data_file: info about vacancies for save
+        :param vacancies_file: info about vacancies for save
+        :param company_data: info about employers for save
         :param name_bd: name of database
         """
 
@@ -210,8 +204,8 @@ class DBManager:
         conn.autocommit = True
         with conn.cursor() as cur:
             for data in vacancies_file:
-                count_columns = '%s ' * len(vacancies_file)
-                val = data
+                count_columns = '%s ' * len(data)
+                val = tuple(data.values())
                 cur.execute(f"INSERT INTO info_vacancies (name_vacancy, salary_from, salary_to,"
                             f"employer_id, url, city, experience) "
                             f"VALUES({', '.join(count_columns.split())})", val)
@@ -224,40 +218,39 @@ class DBManager:
                             f"VALUES({', '.join(count_columns.split())})", val)
         conn.commit()
         conn.close()
-        return f"Info about vacancies save in database: {name_bd} in table info_vacancies."
+        return f"Info about vacancies save in database: {name_bd} in tables."
 
 
 response = GetApiHh()
 # Get vacancies for user and info about employer
 response.get_vacancy_from_api('оператор')
+vacancies_list = response.all_vacancy
 
-# Sorted vacancies list
-sorted_list = Vacancy.sorted_vacancy_list(response.all_vacancy)
-vacancy = Vacancy.get_vacancy_list(sorted_list)
-sorted_vacancies = sorted(vacancy)
+# Get clean vacancies list
+clean_vacancies_list = Vacancy.sorted_vacancy_list(vacancies_list)
 
-# Get info about top employers
-list_info_top_employers = []
+# Get employers id
+employers_id = []
 
-for id_employers in sorted_vacancies[:10]:
-    print(id_employers)
-    # employer = response.get_info_about_employer(id_employers[3])
-#     list_info_top_employers.append({'Employer id': employer['id'], 'Employer name': employer['name'],
-#                                     'Employer description': employer['description'],
-#                                     'Vacancies URL': employer['vacancies_url']})
+for info in clean_vacancies_list:
+    employers_id.append(info.get('Employer id'))
 
-# vacancies_of_top_employer.append()
+# Get info about employers
+employers_info = []
+for id_employer in set(employers_id):
+    employer_info = response.get_info_about_employer(id_employer)
+    employers_info.append({'Employer id': employer_info['id'], 'Employer name': employer_info['name'],
+                           'Employer description': employer_info['alternate_url'],
+                           'Employer vacancies': employer_info['vacancies_url']})
 
-# Connect to BD
+# Create database
 params = config()
-d_base = DBManager(params)
+database = DBManager(params)
 
-# Create BD
-print(d_base.create_data_base('vacancies'))
+print(database.create_data_base('vacancies'))
 
-# Create table about vacancies and employers info
-print(d_base.create_tables('vacancies'))
+# Create tables
+print(database.create_tables('vacancies'))
 
-# Save info in BD
-# print(d_base.save_data_to_database(sorted_vacancies[:10], list_info_employers, 'vacancies'))
-print(sorted_vacancies)
+# Save info about vacancies and employers in database
+print(database.save_data_to_database(clean_vacancies_list, employers_info, 'vacancies'))
