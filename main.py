@@ -5,56 +5,69 @@ from src.parsing_hh import GetApiHh, JsonSaver, Vacancy, DBManager
 def main():
     response = GetApiHh()
 
-    while True:
-        user_vacancy: str = input("Text name vacancy for search:\n")
-        user_city: str = input("Text city in where you want to find vacancies:\n")
-        if isinstance(user_city, str) and isinstance(user_vacancy, str):
-            break
-        print(f"Please, text alpha, not {user_city}")
+    # Get vacancies for user and info about employer
+    vacancy_name = input("Enter name of vacancy for search: ")
 
-    while True:
-        user_salary = input("Text min salary for search:\n")
-        if user_salary.isdigit():
-            break
-        print(f"Please, text digit, not {user_salary}")
+    response.get_vacancy_from_api(vacancy_name)
+    vacancies_list = response.all_vacancy
 
-    # Get vacancies for user
-    response.get_vacancy_from_api(user_vacancy)
+    # Get clean vacancies list
+    clean_vacancies_list = Vacancy.clean_vacancy_list(vacancies_list)
 
-    file_json = JsonSaver()
+    # Get employers id
+    employers_id = []
 
-    # Save response to JSON
-    file_json.save_file(response.all_vacancy)
+    for info in clean_vacancies_list:
+        employers_id.append(info.get('Employer id'))
 
-    # Read JSON file
-    file_vacancies = file_json.read_file()
+    # Get info about employers
+    employers_info = response.get_employers_info(set(employers_id))
 
-    # Sorted file with vacancies
-    sorted_list = Vacancy.sorted_vacancy_list(file_vacancies, user_city, int(user_salary))
-
-    # Print vacancies for user
-    vacancy = Vacancy.get_vacancy_list(sorted_list)
-    sorted_vacancies = sorted(vacancy)
-
-    while True:
-        count = input("How vacancies do you want to see:\n")
-        if count.isdigit():
-            break
-        print(f"Please, text digit, not {count}")
-
-    print(*sorted_vacancies[:int(count)])
-
-    d_base = DBManager()
-    params = config()
+    print("I get all info!")
 
     # Create database
-    d_base.create_data_base('vacancies', params)
+    params = config()
+    database = DBManager(params)
+
+    users_db = input("Input name of database: ")
+
+    print(database.create_data_base(users_db))
 
     # Create tables
-    d_base.create_table('vacancies', params)
+    print(database.create_tables(users_db))
 
-    # Save info to database
-    d_base.save_data_to_database(sorted_vacancies, 'vacancies', params)
+    # Save info about vacancies and employers in database
+    print(database.save_data_to_database(clean_vacancies_list, employers_info, users_db))
+
+    vacancies_count = int(input("How many vacancies show for you: "))
+
+    # Get info about companies and their count of vacancies
+    for row in database.get_companies_and_vacancies_count(users_db)[:vacancies_count]:
+        print(f"Company '{row[0]}':\nCount vacancies: {row[1]}\n")
+
+    # Get info about vacancies
+    for row in database.get_all_vacancies('vacancies')[:vacancies_count]:
+        print(f"Company: {row[0]}\nVacancy: {row[1]}\nSalary: from {row[2]} to {row[3]}\nURL: {row[4]}\n")
+
+    # Get average salary
+    avg_salary = 0
+    for i in database.get_avg_salary(users_db)[:vacancies_count]:
+        avg_salary = i
+        print(f"Average salary for this vacancy: {avg_salary}\n")
+
+    # Get all vacancies from DB which salary more than average salary
+    for row in database.get_vacancies_with_higher_salary(users_db, avg_salary)[:vacancies_count]:
+        print(f"Company: {row[0]}\nVacancy: {row[1]}\nSalary: from {row[2]} to {row[3]}\nURL: {row[4]}\n")
+
+    # Get vacancies for keyword
+    input_keyword = 'оператор'
+
+    for row in database.get_vacancies_with_keyword(users_db, input_keyword)[:vacancies_count]:
+        Vacancy.get_vacancy_list([{'Name vacancy': row[0], 'Salary from': row[1], 'Salary to': row[2],
+                                   'Employer id': row[3], 'URL': row[4], 'City': row[5], 'Experience': row[6]}])
+
+    for vacancy in Vacancy.list_vacancies:
+        print(vacancy)
 
 
 if __name__ == '__main__':
