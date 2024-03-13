@@ -108,8 +108,13 @@ class Vacancy:
         self.experience = experience
 
     def __repr__(self):
-        return (f"Name{self.name_vacancy}, {self.salary_from}, {self.salary_to}, "
-                f"{self.employer_id}, {self.url}, {self.city}, {self.experience}")
+        return (f"Vacancy name: {self.name_vacancy}\n"
+                f"Salary from: {self.salary_from}\n"
+                f"Salary to: {self.salary_to}\n"
+                f"Employer id: {self.employer_id}\n"
+                f"URL: {self.url}\n"
+                f"City: {self.city}\n"
+                f"Experience: {self.experience}\n")
 
     def __lt__(self, other):
         if other.salary_to < self.salary_to:
@@ -125,9 +130,9 @@ class Vacancy:
         new_list = list()
 
         for vacancy_info in list_vacancy:
-            if vacancy_info["salary"] is None:
-                continue
-            elif vacancy_info["salary"]["from"] and vacancy_info["salary"]["to"]:
+            if vacancy_info["salary"] is not None and vacancy_info["salary"]["from"] is not None:
+                if vacancy_info["salary"]["to"] is None:
+                    vacancy_info["salary"]["to"] = vacancy_info["salary"]["from"]
                 new_list.append(
                     {'Name vacancy': vacancy_info["name"], 'Salary from': vacancy_info["salary"]["from"],
                      'Salary to': vacancy_info["salary"]["to"], 'Employer id': vacancy_info["employer"]["id"],
@@ -138,7 +143,7 @@ class Vacancy:
         return new_list
 
     @classmethod
-    def get_vacancy_list(cls, list_vacancy: list) -> list:
+    def get_vacancy_list(cls, list_vacancy: list[dict]) -> list:
         """
         Get list with vacancies dicts. This list with copy of class Vacancy
         :return: new lisrt with copy of class Vacancy
@@ -262,42 +267,53 @@ class DBManager:
 
                 vacancies_info = cur.fetchall()
         conn.close()
+        return vacancies_info[:10]
+
+    def get_avg_salary(self, name_bd: str):
+        """
+        Get average salary in this vacancy.
+        :param name_bd: name of database
+        :return: average salary
+        """
+
+        with psycopg2.connect(dbname=name_bd, **self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT AVG((salary_to+salary_from)/2) DESC FROM info_vacancies""")
+                avg_salary = cur.fetchall()
+        conn.close()
+        salary_avg = [round(i) for salary in avg_salary for i in salary]
+        return salary_avg
+
+    def get_vacancies_with_higher_salary(self, name_bd: str, salary: int):
+        """
+        Get vacancies with salary from average salary.
+        :param name_bd: name of database
+        :param salary: average salary.
+        :return: vacancies with salary from average salary.
+        """
+        with psycopg2.connect(dbname=name_bd, **self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"SELECT company_name, i.name_vacancy, i.salary_from, i.salary_to, i.url "
+                            f"FROM info_employers "
+                            f"JOIN info_vacancies AS i USING(employer_id)"
+                            f"WHERE salary_from >= {salary} "
+                            f"ORDER BY (i.salary_to+i.salary_from)/2 DESC")
+                vacancies_info = cur.fetchall()
+        conn.close()
         return vacancies_info
 
-
-response = GetApiHh()
-# Get vacancies for user and info about employer
-response.get_vacancy_from_api('оператор')
-vacancies_list = response.all_vacancy
-
-# Get clean vacancies list
-clean_vacancies_list = Vacancy.clean_vacancy_list(vacancies_list)
-
-# Get employers id
-employers_id = []
-
-for info in clean_vacancies_list:
-    employers_id.append(info.get('Employer id'))
-
-# Get info about employers
-employers_info = response.get_employers_info(set(employers_id))
-
-# Create database
-params = config()
-database = DBManager(params)
-
-print(database.create_data_base('vacancies'))
-
-# Create tables
-print(database.create_tables('vacancies'))
-
-# Save info about vacancies and employers in database
-print(database.save_data_to_database(clean_vacancies_list, employers_info, 'vacancies'))
-
-# Get info about companies and their count of vacancies
-for row in database.get_companies_and_vacancies_count('vacancies'):
-    print(f"Company '{row[0]}':\nCount vacancies: {row[1]}\n")
-
-# Get info about vacancies
-for row in database.get_all_vacancies('vacancies'):
-    print(row)
+    def get_vacancies_with_keyword(self, name_bd: str, keyword: str):
+        """
+        Compare vacancies with keyword and get these for user/
+        :param keyword: keyword for search
+        :return: vacancies
+        """
+        with psycopg2.connect(dbname=name_bd, **self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"SELECT name_vacancy, salary_from, salary_to, employer_id,"
+                            f"url, city, experience FROM info_vacancies "
+                            f"WHERE name_vacancy LIKE '%{keyword}' "
+                            f"OR name_vacancy LIKE '{keyword}%'")
+                vacancies_info = cur.fetchall()
+        conn.close()
+        return vacancies_info
