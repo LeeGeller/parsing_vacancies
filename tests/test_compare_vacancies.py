@@ -11,12 +11,18 @@ def test_sorted_salary(fixture_class_valid, fixture_data):
     vacancy = fixture_class_valid
 
     vacancy.sorted_salary(data_test, 50000, "Москва")
-    assert vacancy.sort_salary == {50000: [{'area': {'name': 'Москва'}, 'salary': {'from': 50000, 'to': 80000}}]}
+    assert vacancy.sort_salary == {
+        50000: [{"area": {"name": "Москва"}, "salary": {"from": 50000, "to": 80000}}]
+    }
 
 
 def test_get_top_vacancies_valid(fixture_class_valid, fixture_data):
     vacancy = fixture_class_valid
 
-    vacancy.get_top_vacancies({50000: [{'area': {'name': 'Москва'}, 'salary': {'from': 50000, 'to': 80000}}]}, )
+    vacancy.get_top_vacancies(
+        {50000: [{"area": {"name": "Москва"}, "salary": {"from": 50000, "to": 80000}}]},
+    )
 
-    assert vacancy.top_salary == {80000: [{'area': {'name': 'Москва'}, 'salary': {'from': 50000, 'to': 80000}}]}
+    assert vacancy.top_salary == {
+        80000: [{"area": {"name": "Москва"}, "salary": {"from": 50000, "to": 80000}}]
+    }
