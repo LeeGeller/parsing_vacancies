@@ -1,10 +1,6 @@
-import json
 from abc import ABC, abstractmethod
-import time
 
-import requests
-
-from src.utils import get_vacancies_list, ParsingManager
+from src.utils import ParsingManager
 
 
 class AbstractGetApi(ABC):
@@ -49,12 +45,18 @@ class ApiHabr(AbstractGetApi):
         return f"{self.all_vacancy}"
 
     def get_vacancy_from_api(self, name_vacancy: list, pages_limit: int = 3) -> list:
-        url = 'https://career.habr.com/vacancies'
-        headers = {
+        habr_url = 'https://career.habr.com/vacancies'
+        keys_response = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
+        with ParsingManager(habr_url, keys_response, pages_limit) as vacancies:
+            self.all_vacancy = vacancies
+        return self.all_vacancy
 
 
 vacancies_fetcher = ApiHh()
 name_vacancy = ['python', 'junior']
 print(vacancies_fetcher.get_vacancy_from_api(name_vacancy, pages_limit=3))
+
+v = ApiHabr()
+print(v.get_vacancy_from_api(name_vacancy, pages_limit=3))
