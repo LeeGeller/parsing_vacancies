@@ -1,12 +1,16 @@
 import json
 from abc import ABC, abstractmethod
+import time
 
 import requests
 
-from src.utils import get_vacancies_list
+from src.utils import get_vacancies_list, ParsingManager
 
 
-class AbstractGetApiHh(ABC):
+class AbstractGetApi(ABC):
+    @abstractmethod
+    def __init__(self):
+        self.all_vacancy: list = []
 
     @abstractmethod
     def __repr__(self):
@@ -17,7 +21,7 @@ class AbstractGetApiHh(ABC):
         pass
 
 
-class GetApiHh(AbstractGetApiHh):
+class ApiHh(AbstractGetApi):
 
     def __init__(self):
         self.all_vacancy: list = []
@@ -26,18 +30,31 @@ class GetApiHh(AbstractGetApiHh):
     def __repr__(self):
         return f"{self.all_vacancy}"
 
-    def get_vacancy_from_api(self, name_vacancy: list) -> list:
+    def get_vacancy_from_api(self, name_vacancy: list, pages_limit: int = 3) -> list:
         """Get valid info about vacancies for user"""
-        name_vacancy: str = ' '.join(name_vacancy)
-        keys_response = {'text': name_vacancy, 'area': 113, 'per_page': 100, }
-        try:
-            info: json = requests.get(f'https://api.hh.ru/vacancies', params=keys_response)
-            self.all_vacancy: list = json.loads(info.text)['items']
-        except requests.exceptions.RequestException:
-            print('Connection error')
-        return get_vacancies_list(self.all_vacancy)
+
+        hh_url = f'https://api.hh.ru/vacancies'
+        keys_response = {'text': ' '.join(name_vacancy), 'area': 113, 'per_page': 100, }
+
+        with ParsingManager(hh_url, keys_response, pages_limit) as vacancies:
+            self.all_vacancy = vacancies
+        return self.all_vacancy
 
 
-vac = ['python', 'junior']
-parsing_info = GetApiHh()
-print(parsing_info.get_vacancy_from_api(vac))
+class ApiHabr(AbstractGetApi):
+    def __init__(self):
+        self.all_vacancy: list = []
+
+    def __repr__(self):
+        return f"{self.all_vacancy}"
+
+    def get_vacancy_from_api(self, name_vacancy: list, pages_limit: int = 3) -> list:
+        url = 'https://career.habr.com/vacancies'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+
+vacancies_fetcher = ApiHh()
+name_vacancy = ['python', 'junior']
+print(vacancies_fetcher.get_vacancy_from_api(name_vacancy, pages_limit=3))
