@@ -38,6 +38,7 @@ def check_url(url: str, keys_response: dict):
                     "span", class_="link-comp link-comp--appearance-dark"
                 )
                 description_elem = item.find("div", class_="vacancy-card__description")
+                link_elem = item.find("a", class_="vacancy-card__title-link")
 
                 title = title_elem.text.strip() if title_elem else "No title"
                 company = company_elem.text.strip() if company_elem else "No company"
@@ -49,12 +50,14 @@ def check_url(url: str, keys_response: dict):
                     if description_elem
                     else "No description"
                 )
+                link = link_elem['href'] if link_elem else "No link"
 
                 vacancy = {
-                    "title": title,
-                    "company": company,
-                    "location": location,
-                    "description": description,
+                    "Вакансия": title,
+                    "Компания": company,
+                    "Локация": location,
+                    "Описание": description,
+                    "Ссылка": link,
                 }
                 vacancies_response.append(vacancy)
 
