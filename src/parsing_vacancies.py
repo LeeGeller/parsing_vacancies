@@ -57,19 +57,22 @@ class ApiHabr(AbstractGetApi):
         return self.all_vacancy
 
     @staticmethod
-    def clean_vacancies_list_from_habr(
-        name_vacancy: list, vacancies_list: list[dict]
+    def clean_vacancies_list(
+            name_vacancy: list, vacancies_list: list[dict]
     ) -> list:
         """
         Clean list with info about vacancies.
+        :param vacancies_list: list with vacancies dict.
         :param name_vacancy: list with info about vacancies.
         :return: list with info about vacancies.
         """
         sort_vacancies_list = list()
-        for vacancy in name_vacancy:
-            for vacancy_dict in vacancies_list:
-                if vacancy in vacancy_dict.get("title").lower():
-                    sort_vacancies_list.append(vacancy_dict)
+        vacancy_name_lower_word = list(map(lambda word: word.lower(), name_vacancy))
+        vacancy_names_words = vacancy_name_lower_word + list(map(lambda word: word.capitalize(), name_vacancy))
+
+        for vacancy_dict in vacancies_list:
+            if any(word in vacancy_dict.get('Вакансия') for word in vacancy_names_words):
+                sort_vacancies_list.append(vacancy_dict)
 
         return sort_vacancies_list
 
@@ -81,8 +84,8 @@ print(vacancies_fetcher.get_vacancy_from_api(name_vacancy_hh, pages_limit=2))
 
 # Пример использования ApiHabr
 v = ApiHabr()
-name_vacancy_habr = ["python", "junior"]
+name_vacancy_habr = ["python", "junior", "Python"]
 print("\nVacancies from Habr Career:")
 dirty_list = v.get_vacancy_from_api(pages_limit=2)
-clean_list = v.clean_vacancies_list_from_habr(name_vacancy_habr, dirty_list)
+clean_list = v.clean_vacancies_list(name_vacancy_habr, dirty_list)
 print(clean_list)
