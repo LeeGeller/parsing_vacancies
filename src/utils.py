@@ -50,7 +50,7 @@ def check_url(url: str, keys_response: dict):
                     if description_elem
                     else "No description"
                 )
-                link = link_elem['href'] if link_elem else "No link"
+                link = "https://career.habr.com" + link_elem['href'] if link_elem else "No link"
 
                 vacancy = {
                     "Вакансия": title,
