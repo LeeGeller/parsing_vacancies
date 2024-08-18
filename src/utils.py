@@ -52,18 +52,24 @@ def check_url(url: str, keys_response: dict):
                 )
                 link = "https://career.habr.com" + link_elem['href'] if link_elem else "No link"
 
+                # Извлечение информации о зарплате
+                salary_elem = item.find('div', class_='basic-salary')
+                salary = salary_elem.text.strip() if salary_elem else "Не указана"
+
                 vacancy = {
                     "Вакансия": title,
                     "Компания": company,
                     "Локация": location,
                     "Описание": description,
                     "Ссылка": link,
+                    'Опыт работы': 'На хабре не указано',
+                    'Зарплата': salary,
                 }
+
                 vacancies_response.append(vacancy)
 
         except requests.exceptions.RequestException:
             print("Connection error")
-
     else:
         response = requests.get(url, params=keys_response)
         if response.status_code == 200:
@@ -108,3 +114,15 @@ class ParsingManager:
             print(f"Exception occurred: {exc_type}, {exc_val}")
         else:
             print(f"Parsed {len(self.vacancies_list)} vacancies")
+
+
+def clean_salary_from_habr(salary: str):
+    salary_from = 0
+    salary_to = 0
+    if 'до' in salary:
+        salary_to = int(salary.split('до')[1].replace(' ', '').strip('₽'))
+    if 'от' in salary:
+        salary_from = salary.split('от')[1].replace(' ', '')
+        salary_from = salary_from.split('до')[0] if len(salary_from.split('до')) > 1 else salary_from
+
+    return salary_from, salary_to
