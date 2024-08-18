@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.utils import ParsingManager
+from src.utils import ParsingManager, clean_salary_from_habr
 
 
 class AbstractGetApi(ABC):
@@ -27,10 +27,10 @@ class ApiHh(AbstractGetApi):
     def __repr__(self):
         return f"{self.all_vacancy}"
 
-    def get_vacancy_from_api(self, name_vacancy: list, pages_limit: int = 2) -> list:
+    def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
         hh_url = f"https://api.hh.ru/vacancies"
         keys_response = {
-            "text": " ".join(name_vacancy),
+            "text": " ".join(query_vacancies_list),
             "area": 113,
             "per_page": 100,
         }
@@ -38,6 +38,43 @@ class ApiHh(AbstractGetApi):
         with ParsingManager(hh_url, keys_response, pages_limit) as vacancies:
             self.all_vacancy = vacancies
         return self.all_vacancy
+
+    @staticmethod
+    def clean_vacancies_list(vacancies_list: list[dict]
+                             ) -> list:
+        """
+        Clean list with info about vacancies.
+        :param vacancies_list: list with vacancies dict.
+        :return: list with info about vacancies.
+        """
+        sorted_vacancies_list = list()
+
+        for vacancy in vacancies_list:
+            temp_dict = {
+                'Вакансия': vacancy.get('name', 'No title'),
+                'Компания': vacancy.get('employer', {}).get('name', 'No company'),
+                'Локация': vacancy.get('area', {}).get('name', 'No location'),
+                'Описание': vacancy.get('snippet', {}).get('responsibility', 'No description'),
+                'Ссылка': vacancy.get('alternate_url', 'No link'),
+                'Опыт работы': vacancy.get('experience', {}).get('name', 'Not specified'),
+            }
+
+            if vacancy.get('salary', {}) is None:
+                salary_from = salary_to = 0
+            else:
+                salary_from = vacancy.get('salary', {}).get('from', None)
+                salary_to = vacancy.get('salary', {}).get('to', None)
+
+            if salary_from and not salary_to:
+                salary_to = salary_from
+            elif not salary_from and salary_to:
+                salary_from = 0
+
+            temp_dict['Зарплата от'] = salary_from
+            temp_dict['Зарплата до'] = salary_to
+            sorted_vacancies_list.append(temp_dict)
+
+        return sorted_vacancies_list
 
 
 class ApiHabr(AbstractGetApi):
@@ -47,8 +84,9 @@ class ApiHabr(AbstractGetApi):
     def __repr__(self):
         return f"{self.all_vacancy}"
 
-    def get_vacancy_from_api(self, pages_limit: int = 2) -> list:
-        habr_url = "https://career.habr.com/vacancies"
+    def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
+        querry = " ".join(query_vacancies_list)
+        habr_url = "https://career.habr.com/vacancies?q=" + querry
         keys_response = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -57,35 +95,38 @@ class ApiHabr(AbstractGetApi):
         return self.all_vacancy
 
     @staticmethod
-    def clean_vacancies_list(
-            name_vacancy: list, vacancies_list: list[dict]
-    ) -> list:
+    def clean_vacancies_list(vacancies_list: list[dict]
+                             ) -> list:
         """
         Clean list with info about vacancies.
         :param vacancies_list: list with vacancies dict.
-        :param name_vacancy: list with info about vacancies.
         :return: list with info about vacancies.
         """
-        sort_vacancies_list = list()
-        vacancy_name_lower_word = list(map(lambda word: word.lower(), name_vacancy))
-        vacancy_names_words = vacancy_name_lower_word + list(map(lambda word: word.capitalize(), name_vacancy))
+        sorted_vacancies_list = list()
 
-        for vacancy_dict in vacancies_list:
-            if any(word in vacancy_dict.get('Вакансия') for word in vacancy_names_words):
-                sort_vacancies_list.append(vacancy_dict)
+        for vacancy in vacancies_list:
+            salary_from, salary_to = clean_salary_from_habr(vacancy['Зарплата'])
+            temp_dict = {'Вакансия': vacancy['Вакансия'], 'Компания': vacancy['Компания'],
+                         'Локация': vacancy['Локация'], 'Описание': vacancy['Описание'], 'Ссылка': vacancy['Ссылка'],
+                         'Опыт работы': vacancy['Опыт работы'], 'Зарплата от': salary_from,
+                         'Зарплата до': salary_to}
 
-        return sort_vacancies_list
+            sorted_vacancies_list.append(temp_dict)
+
+        return sorted_vacancies_list
 
 
-vacancies_fetcher = ApiHh()
-name_vacancy_hh = ["python", "junior"]
-print("Vacancies from HH.ru API:")
-print(vacancies_fetcher.get_vacancy_from_api(name_vacancy_hh, pages_limit=2))
+query_vacancies_list = ["python", "junior", "Python"]
 
-# Пример использования ApiHabr
-v = ApiHabr()
-name_vacancy_habr = ["python", "junior", "Python"]
-print("\nVacancies from Habr Career:")
-dirty_list = v.get_vacancy_from_api(pages_limit=2)
-clean_list = v.clean_vacancies_list(name_vacancy_habr, dirty_list)
-print(clean_list)
+hh = ApiHh()
+habr = ApiHabr()
+
+dirty_list_hh = hh.get_vacancy_from_api(query_vacancies_list, pages_limit=2)
+clean_list_hh = hh.clean_vacancies_list(dirty_list_hh)
+
+dirty_list_habr = habr.get_vacancy_from_api(query_vacancies_list, pages_limit=2)
+clean_list_habr = habr.clean_vacancies_list(dirty_list_habr)
+
+print(clean_list_habr)
+print()
+print(clean_list_hh)
