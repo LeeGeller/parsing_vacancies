@@ -51,12 +51,12 @@ class ApiHh(AbstractGetApi):
 
         for vacancy in vacancies_list:
             temp_dict = {
-                'Вакансия': vacancy.get('name', 'No title'),
-                'Компания': vacancy.get('employer', {}).get('name', 'No company'),
-                'Локация': vacancy.get('area', {}).get('name', 'No location'),
-                'Описание': vacancy.get('snippet', {}).get('responsibility', 'No description'),
-                'Ссылка': vacancy.get('alternate_url', 'No link'),
-                'Опыт работы': vacancy.get('experience', {}).get('name', 'Not specified'),
+                'name_vacancy': vacancy.get('name', 'No title'),
+                'company': vacancy.get('employer', {}).get('name', 'No company'),
+                'location': vacancy.get('area', {}).get('name', 'No location'),
+                'description': vacancy.get('snippet', {}).get('responsibility', 'No description'),
+                'url': vacancy.get('alternate_url', 'No link'),
+                'experience': vacancy.get('experience', {}).get('name', 'Not specified'),
             }
 
             if vacancy.get('salary', {}) is None:
@@ -70,8 +70,8 @@ class ApiHh(AbstractGetApi):
             elif not salary_from and salary_to:
                 salary_from = 0
 
-            temp_dict['Зарплата от'] = salary_from
-            temp_dict['Зарплата до'] = salary_to
+            temp_dict['salary_from'] = salary_from
+            temp_dict['salary_to'] = salary_to
             sorted_vacancies_list.append(temp_dict)
 
         return sorted_vacancies_list
@@ -106,27 +106,14 @@ class ApiHabr(AbstractGetApi):
 
         for vacancy in vacancies_list:
             salary_from, salary_to = clean_salary_from_habr(vacancy['Зарплата'])
-            temp_dict = {'Вакансия': vacancy['Вакансия'], 'Компания': vacancy['Компания'],
-                         'Локация': vacancy['Локация'], 'Описание': vacancy['Описание'], 'Ссылка': vacancy['Ссылка'],
-                         'Опыт работы': vacancy['Опыт работы'], 'Зарплата от': salary_from,
-                         'Зарплата до': salary_to}
+            temp_dict = {'name_vacancy': vacancy['Вакансия'], 'company': vacancy['Компания'],
+                         'location': vacancy['Локация'], 'description': vacancy['Описание'], 'url': vacancy['Ссылка'],
+                         'experience': vacancy['Опыт работы'], 'salary_from': salary_from,
+                         'salary_to': salary_to}
 
             sorted_vacancies_list.append(temp_dict)
 
         return sorted_vacancies_list
 
 
-query_vacancies_list = ["python", "junior", "Python"]
 
-hh = ApiHh()
-habr = ApiHabr()
-
-dirty_list_hh = hh.get_vacancy_from_api(query_vacancies_list, pages_limit=2)
-clean_list_hh = hh.clean_vacancies_list(dirty_list_hh)
-
-dirty_list_habr = habr.get_vacancy_from_api(query_vacancies_list, pages_limit=2)
-clean_list_habr = habr.clean_vacancies_list(dirty_list_habr)
-
-print(clean_list_habr)
-print()
-print(clean_list_hh)

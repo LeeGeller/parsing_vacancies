@@ -120,7 +120,7 @@ def clean_salary_from_habr(salary: str):
     salary_from = 0
     salary_to = 0
     if 'до' in salary:
-        salary_to = int(salary.split('до')[1].replace(' ', '').strip('₽'))
+        salary_to = int(salary.split('до')[1].replace(' ', '').strip('₽').strip('€'))
     if 'от' in salary:
         salary_from = salary.split('от')[1].replace(' ', '')
         salary_from = salary_from.split('до')[0] if len(salary_from.split('до')) > 1 else salary_from
