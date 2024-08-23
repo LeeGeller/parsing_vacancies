@@ -1,7 +1,7 @@
 from database.queries.core import create_table, insert_data
 from src.parsing_vacancies import ApiHh, ApiHabr
 
-query_vacancies_list = ["python", "junior", "Python"]
+query_vacancies_list = ["python", "Python"]
 
 hh = ApiHh()
 habr = ApiHabr()
