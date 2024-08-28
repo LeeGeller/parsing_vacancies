@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.utils import ParsingManager, clean_salary_from_habr
+from app.utils import ParsingManager, clean_salary_from_habr
 
 
 class AbstractGetApi(ABC):

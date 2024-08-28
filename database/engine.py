@@ -1,4 +1,4 @@
-from sqlalchemy import text, create_engine
+from sqlalchemy import  create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from database.config import config
