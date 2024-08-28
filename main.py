@@ -16,4 +16,14 @@ clean_list_habr = habr.clean_vacancies_list(dirty_list_habr)
 VacanciesORM.create_table()
 
 VacanciesORM.insert_data(clean_list_hh + clean_list_habr)
-print(VacanciesORM.select_data())
+
+selected_vacancies = VacanciesORM.select_data()
+
+for vacancy in selected_vacancies:
+
+
+    print(vacancy['company'], vacancy['name_vacancy'])
+
+
+
+
