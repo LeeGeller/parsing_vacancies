@@ -1,5 +1,5 @@
-
-from sqlalchemy import select, desc
+from celery.bin.result import result
+from sqlalchemy import select, desc, and_
 from sqlalchemy.orm import Mapped, mapped_column
 from database.engine import engine, Base, session_factory
 
@@ -26,7 +26,7 @@ class VacanciesORM(Base):
 
     @staticmethod
     def insert_data(vacancies_list: list[dict]) -> None:
-        vacancies_set = set(tuple(vacancy.items() for vacancy in vacancies_list))
+        vacancies_set = set(tuple(vacancy.items()) for vacancy in vacancies_list)
         with session_factory() as session:
             for vacancy_tuple in vacancies_set:
                 session.add(VacanciesORM(**dict(vacancy_tuple)))
@@ -55,4 +55,18 @@ class VacanciesORM(Base):
             result = session.execute(query)
             vacancies = result.scalars().all()
 
+        return [vacancy.__dict__ for vacancy in vacancies]
+
+    @staticmethod
+    def get_vacancies_without_experience_and_salary() -> list[dict]:
+        with session_factory() as session:
+            query = (
+                select(VacanciesORM)
+                .where(and_(
+                    VacanciesORM.salary_to == 0,
+                    VacanciesORM.salary_from == 0,
+                    VacanciesORM.experience == 'Нет опыта'))
+            )
+            result = session.execute(query)
+            vacancies = result.scalars().all()
         return [vacancy.__dict__ for vacancy in vacancies]
