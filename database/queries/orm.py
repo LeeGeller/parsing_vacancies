@@ -1,6 +1,8 @@
-from sqlalchemy import select
+
+from sqlalchemy import select, desc
 from sqlalchemy.orm import Mapped, mapped_column
 from database.engine import engine, Base, session_factory
+
 
 
 class VacanciesORM(Base):
@@ -24,9 +26,10 @@ class VacanciesORM(Base):
 
     @staticmethod
     def insert_data(vacancies_list: list[dict]) -> None:
+        vacancies_set = set(tuple(vacancy.items() for vacancy in vacancies_list))
         with session_factory() as session:
-            for vacancy_info in vacancies_list:
-                session.add(VacanciesORM(**vacancy_info))
+            for vacancy_tuple in vacancies_set:
+                session.add(VacanciesORM(**dict(vacancy_tuple)))
             session.commit()
 
     @staticmethod
@@ -36,6 +39,20 @@ class VacanciesORM(Base):
             query = select(VacanciesORM)
 
             result = session.execute(query)
-            vacancies = result.all()
+            vacancies = result.scalars().all()
 
-            return vacancies
+        return [vacancy.__dict__ for vacancy in vacancies]
+
+    @staticmethod
+    def get_top_vacancies_without_experience(limit: int = 20) -> list[dict]:
+        with session_factory() as session:
+            query = (
+                select(VacanciesORM)
+                .where(VacanciesORM.experience == 'Нет опыта')
+                .order_by(desc(VacanciesORM.salary_to))
+                .limit(limit)
+            )
+            result = session.execute(query)
+            vacancies = result.scalars().all()
+
+        return [vacancy.__dict__ for vacancy in vacancies]
