@@ -1,5 +1,5 @@
 from celery.bin.result import result
-from sqlalchemy import select, desc, and_
+from sqlalchemy import select, desc, and_, or_, func
 from sqlalchemy.orm import Mapped, mapped_column
 from database.engine import engine, Base, session_factory
 
@@ -70,3 +70,19 @@ class VacanciesORM(Base):
             result = session.execute(query)
             vacancies = result.scalars().all()
         return [vacancy.__dict__ for vacancy in vacancies]
+
+    @staticmethod
+    def get_avg_salary():
+        with session_factory() as session:
+            query = (
+                select(func.avg(VacanciesORM.salary_from).label('avg_salary_from'),
+                        func.avg(VacanciesORM.salary_to).label('avg_salary_to'))
+                .where(or_(
+                    VacanciesORM.salary_to != 0,
+                    VacanciesORM.salary_from != 0))
+
+            )
+            result = session.execute(query)
+            vacancies = result.fetchone()
+
+        return vacancies
