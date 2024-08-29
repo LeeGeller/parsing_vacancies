@@ -86,3 +86,16 @@ class VacanciesORM(Base):
             vacancies = result.fetchone()
 
         return vacancies
+
+    @staticmethod
+    def get_min_salary():
+        with session_factory() as session:
+            query = (
+                select(
+                    func.min(VacanciesORM.salary_from).label('min_salary')
+                    )
+                .where(VacanciesORM.salary_from != 0)
+            )
+            result = session.execute(query)
+            vacancies = result.fetchone()
+        return vacancies
