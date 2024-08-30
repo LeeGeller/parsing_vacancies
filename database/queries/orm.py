@@ -58,6 +58,21 @@ class VacanciesORM(Base):
         return [vacancy.__dict__ for vacancy in vacancies]
 
     @staticmethod
+    def get_top_vacancies(limit: int = 10) -> list[dict]:
+        with session_factory() as session:
+            query = (
+                select(VacanciesORM)
+                .where(VacanciesORM.salary_to != 0)
+                .order_by(desc(VacanciesORM.salary_to))
+                .limit(limit)
+            )
+
+            result = session.execute(query)
+            vacancies = result.scalars().all()
+        return [vacancy.__dict__ for vacancy in vacancies]
+
+
+    @staticmethod
     def get_vacancies_without_experience_and_salary() -> list[dict]:
         with session_factory() as session:
             query = (
@@ -69,10 +84,11 @@ class VacanciesORM(Base):
             )
             result = session.execute(query)
             vacancies = result.scalars().all()
+
         return [vacancy.__dict__ for vacancy in vacancies]
 
     @staticmethod
-    def get_avg_salary():
+    def get_avg_salary() -> list[dict]:
         with session_factory() as session:
             query = (
                 select(func.avg(VacanciesORM.salary_from).label('avg_salary_from'),
@@ -88,7 +104,7 @@ class VacanciesORM(Base):
         return vacancies
 
     @staticmethod
-    def get_min_salary():
+    def get_min_salary() -> list[dict]:
         with session_factory() as session:
             query = (
                 select(
@@ -98,4 +114,20 @@ class VacanciesORM(Base):
             )
             result = session.execute(query)
             vacancies = result.fetchone()
+        return vacancies
+
+    @staticmethod
+    def get_max_salary() -> list[dict]:
+        with session_factory() as session:
+            query = (
+                select(
+                    func.max(VacanciesORM.salary_to).label('max_salary')
+                )
+                .where(VacanciesORM.salary_to != 0)
+            )
+
+            result = session.execute(query)
+
+            vacancies = result.fetchone()
+
         return vacancies

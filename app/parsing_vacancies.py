@@ -13,7 +13,7 @@ class AbstractGetApi(ABC):
         pass
 
     @abstractmethod
-    def get_vacancy_from_api(self, name_vacancy: str) -> list:
+    async def get_vacancy_from_api(self, name_vacancy: str) -> list:
         """Get valid info about vacancies for user"""
         pass
 
@@ -27,7 +27,7 @@ class ApiHh(AbstractGetApi):
     def __repr__(self):
         return f"{self.all_vacancy}"
 
-    def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
+    async def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
         hh_url = f"https://api.hh.ru/vacancies"
         keys_response = {
             "text": " ".join(query_vacancies_list),
@@ -35,7 +35,7 @@ class ApiHh(AbstractGetApi):
             "per_page": 100,
         }
 
-        with ParsingManager(hh_url, keys_response, pages_limit) as vacancies:
+        async with ParsingManager(hh_url, keys_response, pages_limit) as vacancies:
             self.all_vacancy = vacancies
         return self.all_vacancy
 
@@ -84,13 +84,13 @@ class ApiHabr(AbstractGetApi):
     def __repr__(self):
         return f"{self.all_vacancy}"
 
-    def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
+    async def get_vacancy_from_api(self, query_vacancies_list: list, pages_limit: int = 2) -> list:
         querry = " ".join(query_vacancies_list)
         habr_url = "https://career.habr.com/vacancies?q=" + querry
         keys_response = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
-        with ParsingManager(habr_url, keys_response, pages_limit) as vacancies:
+        async with ParsingManager(habr_url, keys_response, pages_limit) as vacancies:
             self.all_vacancy = vacancies
         return self.all_vacancy
 
