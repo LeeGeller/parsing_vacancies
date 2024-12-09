@@ -1,6 +1,5 @@
-import json
+import asyncio
 import re
-import time
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -76,11 +75,10 @@ async def check_url(url: str, keys_response: dict):
         else:
             async with session.get(url, params=keys_response) as response:
                 if response.status == 200:
-                    vacancies_response = await response.json()["items"]
+                    return await response.json()  # Возвращаем данные, если запрос успешен
                 else:
-                    print(
-                        f"Failed to retrieve vacancies from {url}. Status code: {response.status}"
-                    )
+                    print(f"Failed to retrieve vacancies from {url}. Status code: {response.status}")
+                    return []
 
     return vacancies_response
 
@@ -90,27 +88,30 @@ class ParsingManager:
         self.pages_limit = pages_limit
         self.url = url
         self.keys_response = keys_response
-        self.vacancies_list = list()
+        self.vacancies_list = []
 
     async def __aenter__(self):
-
         current_page = 0
-        while current_page <= self.pages_limit:
+        while current_page < self.pages_limit:
             try:
                 vacancies_response = await check_url(self.url, self.keys_response)
+                print(f"Полученные вакансии на странице {current_page}: {vacancies_response}")  # Для отладки
 
-                if isinstance(vacancies_response, aiohttp.models.Response):
-                    self.vacancies_list.extend(
-                        json.loads(vacancies_response.text)["items"]
-                    )
-                elif isinstance(vacancies_response, list):
-                    self.vacancies_list.extend(vacancies_response)
+                # Проверяем, что вакансии действительно получены
+                vacancies = check_len_vacancies_list(vacancies_response)
+                if isinstance(vacancies, str):
+                    print(vacancies)  # Печатаем сообщение о том, что вакансий нет
+                    return []  # Возвращаем пустой список, если вакансий нет
+
+                if isinstance(vacancies, dict) and "items" in vacancies:
+                    self.vacancies_list.extend(vacancies["items"])
 
                 current_page += 1
-                time.sleep(2)
-            except aiohttp.ClientError:
-                print("Connection error")
-        return check_len_vacancies_list(self.vacancies_list)
+                await asyncio.sleep(2)
+            except aiohttp.ClientError as e:
+                print(f"Connection error: {e}")
+                break
+        return self.vacancies_list  # Возвращаем вакансии, если они были найдены
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if exc_type:
