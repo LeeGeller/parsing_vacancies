@@ -40,14 +40,16 @@ class ApiHh(AbstractGetApi):
         return self.all_vacancy
 
     @staticmethod
-    def clean_vacancies_list(vacancies_list: list[dict]
-                             ) -> list:
+    def clean_vacancies_list(vacancies_list: list[dict]) -> list:
         """
         Clean list with info about vacancies.
         :param vacancies_list: list with vacancies dict.
         :return: list with info about vacancies.
         """
         sorted_vacancies_list = list()
+
+        # Отладочный вывод
+        print("Полученные вакансии:", vacancies_list)
 
         for vacancy in vacancies_list:
             temp_dict = {
@@ -59,11 +61,16 @@ class ApiHh(AbstractGetApi):
                 'experience': vacancy.get('experience', {}).get('name', 'Not specified'),
             }
 
-            if vacancy.get('salary', {}) is None:
+            if not vacancy.get('salary'):
                 salary_from = salary_to = 0
             else:
                 salary_from = vacancy.get('salary', {}).get('from', None)
                 salary_to = vacancy.get('salary', {}).get('to', None)
+
+            if salary_from is None:
+                salary_from = 0
+            if salary_to is None:
+                salary_to = 0
 
             if salary_from and not salary_to:
                 salary_to = salary_from
@@ -102,7 +109,7 @@ class ApiHabr(AbstractGetApi):
         :param vacancies_list: list with vacancies dict.
         :return: list with info about vacancies.
         """
-        sorted_vacancies_list = list()
+        sorted_vacancies_list = []
 
         for vacancy in vacancies_list:
             salary_from, salary_to = clean_salary_from_habr(vacancy['Зарплата'])
@@ -115,5 +122,14 @@ class ApiHabr(AbstractGetApi):
 
         return sorted_vacancies_list
 
-
-
+# a = ApiHh()
+# b = ApiHabr()
+#
+# async def main():
+#     result_a = await a.get_vacancy_from_api(['Python'])
+#     result_b = await b.get_vacancy_from_api(['Python'])
+#
+#     print(result_a)
+#     print(result_b)
+#
+# asyncio.run(main())
